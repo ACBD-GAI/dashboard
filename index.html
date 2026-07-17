@@ -300,7 +300,7 @@ No data loaded.
 const BRANCH="DASHBOARD";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbz2BRx4UjTOvaxzmVS6LM2kO3qIJwCSzBpnfkv1PCMzKs0_PrE87ZsXBGEe7bcBLGAm/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxHjSw_D6yvp9xNCQuoeH5RWlUgU8iICXQchy9k0OpOwJmPts7hyY7UPFhudQOO6v2C1g/exec";
 
 
 
@@ -526,14 +526,161 @@ document.getElementById("otp").addEventListener("keydown",e=>{
 
 /* ================= DASHBOARD ================= */
 
-function loadDashboard(){
+async function loadDashboard(){
 
-    console.log("Dashboard Loaded");
+    const branch =
+    document.getElementById("branchSelect").value;
 
-    // We'll build this next.
+
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+
+    document.getElementById("loading").style.display="flex";
+
+
+    try{
+
+        const res = await fetch(
+            API_URL+
+            "?action=summary"+
+            "&branch="+branch+
+            "&sheet="+sheet
+        );
+
+
+        const data = await res.json();
+
+
+        renderTable(data.data);
+
+
+    }catch(err){
+
+        console.log(err);
+        alert(err);
+
+    }
+
+
+    document.getElementById("loading").style.display="none";
 
 }
 
+
+
+function renderTable(rows){
+
+
+    const body =
+    document.getElementById("tableBody");
+
+
+    body.innerHTML="";
+
+
+    document.getElementById("showingCount").innerHTML =
+    rows.length;
+
+
+
+    rows.forEach(r=>{
+
+
+        body.innerHTML += `
+
+        <tr>
+
+        <td>${r.branch}</td>
+
+        <td>${r.barcode}</td>
+
+        <td>${r.description}</td>
+
+        <td>${r.tag}</td>
+
+        <td>${r.si}</td>
+
+        <td>${r.qty}</td>
+
+        <td>${r.date}</td>
+
+        </tr>
+
+        `;
+
+
+    });
+
+
+}
+
+
+
+
+// BUTTON EVENTS
+
+document.getElementById("searchBtn").onclick =
+loadDashboard;
+
+
+document.getElementById("refreshBtn").onclick =
+loadDashboard;
+
+
+document.getElementById("branchSelect").onchange =
+loadDashboard;
+
+
+document.getElementById("sheetSelect").onchange =
+loadDashboard;
+
+
+ function renderTable(rows){
+
+
+const body=document.getElementById("tableBody");
+
+
+body.innerHTML="";
+
+
+document.getElementById("showingCount").innerHTML=
+rows.length;
+
+
+
+rows.forEach(r=>{
+
+
+body.innerHTML+=`
+
+<tr>
+
+<td>${r.branch}</td>
+
+<td>${r.barcode}</td>
+
+<td>${r.description}</td>
+
+<td>${r.tag}</td>
+
+<td>${r.si}</td>
+
+<td>${r.qty}</td>
+
+<td>${r.date}</td>
+
+</tr>
+
+
+`;
+
+
+});
+
+
+}
 
 
   
