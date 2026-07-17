@@ -443,11 +443,11 @@ localStorage.setItem(
 
 async function logout(){
 
-    const session=
-    JSON.parse(
-        localStorage.getItem("inventorySession_"+BRANCH)
-        || "{}"
-    );
+  const session =
+JSON.parse(
+    localStorage.getItem(SESSION_KEY)
+    || "{}"
+);
 
     try{
 
