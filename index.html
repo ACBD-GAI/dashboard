@@ -264,7 +264,2214 @@ No data loaded.
 <script src="script.js"></script>
 
 </div>
+
+  
 <SCRIPT>
+
+
+let auditBusy = false;
+let auditCount = 0;
+
+const BRANCH="GAI";
+let auditMode = false;
+let scanner = null;
+let isScanning = false;
+let isSaving = false;
+
+let lastAuditBarcode = "";
+let tempCode = "";
+let tempSi = "";
+
+/* ===== NEW FOR CONTINUOUS RE-INVENTORY ===== */
+let auditQueue = [];
+let auditProcessing = false;
+let auditRecent = new Map();
+/* =========================================== */
+
+const STOCK_ADMIN = [
+  "remnvill@gmail.com",
+  "fmfc_audit654@yahoo.com"
+];
+
+
+const API_URL = "https://script.google.com/macros/s/AKfycbz2BRx4UjTOvaxzmVS6LM2kO3qIJwCSzBpnfkv1PCMzKs0_PrE87ZsXBGEe7bcBLGAm/exec";
+
+function getSessionParams(){
+
+const session =
+JSON.parse(
+localStorage.getItem("inventorySession_"+BRANCH)
+|| "{}"
+);
+
+
+return (
+"&email=" + encodeURIComponent(session.email || "") +
+"&sessionId=" + encodeURIComponent(session.sessionId || "")
+);
+
+}
+function checkReportAccess(){
+
+  const session = JSON.parse(
+    localStorage.getItem("inventorySession_" + BRANCH) || "{}"
+  );
+
+  const email = (session.email || "").trim().toLowerCase();
+
+  const reportBtn = document.getElementById("reportBtn");
+  const updateBtn = document.getElementById("updateStockBtn");
+
+  const REPORT_USERS = [
+    "remnvill@gmail.com",
+    "willremn@gmail.com",
+    "fmfc_audit654@yahoo.com",
+    "fmfc_ho2016@yahoo.com",
+    "mmlorijo1990@gmail.com"
+  ];
+
+  if(reportBtn){
+    reportBtn.style.display =
+      REPORT_USERS.includes(email) ? "block" : "none";
+  }
+
+const clearBtn = document.getElementById("clearBtn");
+
+if(clearBtn){
+    clearBtn.style.display =
+        STOCK_ADMIN.includes(email) ? "block" : "none";
+}
+  
+
+  if(updateBtn){
+    updateBtn.style.display =
+      STOCK_ADMIN.includes(email) ? "block" : "none";
+  }
+
+}
+
+function checkStockAccess(){
+
+  const session = JSON.parse(
+    localStorage.getItem("inventorySession_" + BRANCH) || "{}"
+  );
+
+  const email = (session.email || "").trim().toLowerCase();
+
+  return STOCK_ADMIN.includes(email);
+
+}
+  
+  
+
+/* ================= LOGIN ================= */
+async function sendOTP(){
+
+try {
+
+const email=document.getElementById("email").value.trim();
+
+if(!email){
+  alert("Enter Gmail");
+  return;
+}
+
+
+const res=await fetch(
+API_URL+
+"?action=sendOTP&email="+encodeURIComponent(email)
+);
+
+
+const data=await res.json();
+
+
+if (data.status === "OTP_SENT") {
+
+
+    if (data.alreadyLoggedIn) {
+
+      document.getElementById("loginStatus").innerHTML =
+      `
+      <div class="login-warning">
+      ⚠ Account already logged in.<br><br>
+
+      <button 
+      onclick="forceLogin()"
+      style="
+      background:#ff9800;
+      color:white;
+      padding:10px 20px;
+      border:none;
+      border-radius:10px;
+      font-weight:bold;
+      cursor:pointer;
+      ">
+      FORCE LOGOUT OTHER DEVICE
+      </button>
+
+      </div>
+      `;
+
+    } else {
+
+      document.getElementById("loginStatus").innerText =
+      "✅ OTP sent to Gmail";
+
+    }
+
+
+    const otpBox = document.getElementById("otp");
+
+otpBox.style.display = "block";
+document.getElementById("verifyBtn").style.display = "block";
+
+// Automatically place the cursor in the OTP field
+otpBox.focus();
+otpBox.select();
+
+
+}
+else if(data.status === "EMAIL_DENIED"){
+
+    document.getElementById("loginStatus").innerText =
+    "❌ Gmail not allowed.";
+
+}
+else{
+
+    document.getElementById("loginStatus").innerText =
+    "❌ Login error.";
+
+}
+
+
+}
+catch(err){
+
+document.getElementById("loginStatus").innerHTML =
+`
+<div style="color:red">
+❌ ERROR:<br>
+${err}
+</div>
+`;
+
+console.log(err);
+
+}
+
+}
+async function verifyOTP(){
+
+const email=document.getElementById("email").value;
+const otp=document.getElementById("otp").value;
+
+
+const res=await fetch(
+API_URL+
+"?action=verifyOTP"+
+"&email="+encodeURIComponent(email)+
+"&otp="+encodeURIComponent(otp)
+);
+
+
+const data=await res.json();
+
+
+if (data.status === "OK") {
+
+  localStorage.setItem("inventoryLoggedIn", "true");
+  localStorage.setItem(
+"inventorySession_"+BRANCH,
+JSON.stringify({
+email: email,
+sessionId: data.sessionId,
+time: Date.now()
+})
+);
+  localStorage.setItem("loginTime", Date.now());
+
+
+
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+checkReportAccess();
+  
+}
+else if (data.status === "ALREADY_LOGGED_IN") {
+
+  const force = confirm(
+    "This Gmail is already logged in on another device.\n\nDo you want to force logout the other device?"
+  );
+
+  if (force) {
+    forceLogin();
+  }
+
+}
+else if (data.status === "INVALID") {
+
+  document.getElementById("loginStatus").innerHTML =
+  `
+  <div style="
+    color:#d32f2f;
+    margin-top:15px;
+    font-weight:bold;
+  ">
+  ❌ Wrong OTP. Please check and try again.
+  </div>
+  `;
+
+}
+else {
+
+  document.getElementById("loginStatus").innerHTML =
+  `
+  <div style="
+    color:#d32f2f;
+    margin-top:15px;
+    font-weight:bold;
+  ">
+  ❌ Login failed.
+  </div>
+  `;
+
+}
+}
+
+  async function forceLogin() {
+
+  const email = document.getElementById("email").value;
+  const otp = document.getElementById("otp").value;
+
+  const res = await fetch(
+    API_URL +
+    "?action=forceLogin" +
+    "&email=" + encodeURIComponent(email) +
+    "&otp=" + encodeURIComponent(otp)
+  );
+
+  const data = await res.json();
+
+  if (data.status === "OK") {
+
+    localStorage.setItem("inventoryLoggedIn", "true");
+localStorage.setItem(
+"inventorySession_"+BRANCH,
+JSON.stringify({
+email: email,
+sessionId: data.sessionId,
+time: Date.now()
+})
+);
+    
+    localStorage.setItem("loginTime", Date.now());
+    
+    
+
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    checkReportAccess();
+
+  } else {
+
+    alert("Force login failed. Please request a new OTP.");
+
+  }
+
+}
+
+
+  
+  
+
+
+function setUIScanning(state) {
+  const btn = document.getElementById("scanBtn");
+  const siBox = document.getElementById("siNo");
+  const reader = document.getElementById("reader");
+  const refreshBtn = document.getElementById("refreshBtn");
+
+  if (state) {
+    btn.innerHTML = "⛔ STOP SCANNING";
+    siBox.disabled = true;
+    reader.style.display = "block";
+    refreshBtn.disabled = true;
+    refreshBtn.style.opacity = "0.5";
+  } else {
+    btn.innerHTML = "📷 START SCAN";
+    siBox.disabled = false;
+    reader.style.display = "none";
+    refreshBtn.disabled = false;
+    refreshBtn.style.opacity = "1";
+  }
+}
+
+
+
+async function toggleScan() {
+  const siNo = document.getElementById("siNo").value;
+  if (!siNo) return alert("Enter SI No");
+
+  if (isScanning) {
+    isScanning = false;
+    setUIScanning(false);
+    if (scanner) {
+      await scanner.stop();
+      await scanner.clear();
+      scanner = null;
+    }
+    return;
+  }
+
+  clearUI();
+  isScanning = true;
+  setUIScanning(true);
+
+const devices = await Html5Qrcode.getCameras();
+
+if(!devices.length){
+  alert("No camera detected");
+  isScanning = false;
+  setUIScanning(false);
+  return;
+}
+
+let cameraId = devices[0].id;
+
+for (let d of devices) {
+  const label = (d.label || "").toLowerCase();
+
+  if (label.includes("back") || label.includes("rear")) {
+    cameraId = d.id;
+    break;
+  }
+}
+
+ scanner = new Html5Qrcode("reader");
+
+await scanner.start(
+    {
+        deviceId: { exact: cameraId }
+    },
+    {
+        fps: 20,
+        qrbox: {
+            width: 300,
+            height: 300
+        },
+        aspectRatio: 1.0,
+        videoConstraints: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+        }
+    },
+    async (code) => {
+
+        if (!isScanning) return;
+
+        isScanning = false;
+        await scanner.stop();
+        await scanner.clear();
+        scanner = null;
+        setUIScanning(false);
+
+        beep();
+        vibrate();
+
+        tempCode = code;
+        tempSi = siNo;
+
+        const res = await fetch(
+            API_URL +
+            "?action=check" +
+            "&barcode=" + encodeURIComponent(code) +
+            getSessionParams()
+        );
+
+        const data = await res.json();
+
+        let row = data.row || [];
+        let colJ = data.colJ || row?.[9] || "";
+        let colO = data.colO || row?.[14] || "";
+
+        if (data.status === "FOUND") {
+            document.getElementById("result").innerHTML = `
+                <div class="card green scan-animate">
+                    ✅ AVAILABLE<br><br>
+                    <b>${colO}</b><br>
+                    ${colJ ? `<small>${colJ}</small><br>` : ""}
+                    <b>${code}</b><br><br>
+
+                    <button id="saveBtn"
+                        class="btn-blue"
+                        onclick="saveYes()">
+                        ADD TO SOLD
+                    </button>
+
+                    <button class="btn-orange"
+                        onclick="cancelNo()">
+                        CANCEL
+                    </button>
+                </div>
+            `;
+        }
+        else if (data.status === "DUPLICATE") {
+            document.getElementById("result").innerHTML = `
+                <div class="card red">
+                    🛑 ALREADY SOLD<br><br>
+                    <b>${colO}</b><br>
+                    ${colJ ? `<small>${colJ}</small><br>` : ""}
+                    <b>${code}</b>
+                </div>
+            `;
+        }
+        else {
+            document.getElementById("result").innerHTML = `
+                <div class="no-results">
+                    ❌ NOT FOUND
+                </div><br>
+                <b>${colO}</b><br>
+                ${colJ ? `<small>${colJ}</small>` : ""}
+            `;
+        }
+    }
+);
+
+// ================= CAMERA IMPROVEMENTS =================
+
+try {
+
+    const video = document.querySelector("#reader video");
+
+    if (video && video.srcObject) {
+
+        const track = video.srcObject.getVideoTracks()[0];
+
+        if (track) {
+
+            const capabilities = track.getCapabilities();
+
+            // Continuous autofocus
+            if (
+                capabilities.focusMode &&
+                capabilities.focusMode.includes("continuous")
+            ) {
+                await track.applyConstraints({
+                    advanced: [{
+                        focusMode: "continuous"
+                    }]
+                });
+
+                console.log("Continuous autofocus enabled");
+            }
+
+            // Auto zoom if supported
+       if (capabilities.zoom) {
+
+    const desiredZoom = 2.0;  
+
+    await track.applyConstraints({
+        advanced: [{
+            zoom: desiredZoom
+        }]
+    });
+
+                console.log("Camera zoom enabled");
+            }
+
+        }
+
+    }
+
+}
+catch (e) {
+
+    console.log("Camera features not supported:", e);
+
+}
+}
+
+  async function stopNormalScanner(){
+
+  if(scanner){
+
+    try{
+      await scanner.stop();
+      await scanner.clear();
+    }
+    catch(e){
+      console.log("Normal scanner stop:", e);
+    }
+
+    scanner=null;
+  }
+
+  isScanning=false;
+
+  setUIScanning(false);
+
+}
+
+  let auditScanner = null;
+let auditScanning = false;
+
+
+  
+
+async function toggleAuditScan() {
+
+  const btn = document.getElementById("auditScanBtn");
+  const scanBtn = document.getElementById("scanBtn");
+
+
+  // STOP NORMAL SCANNER FIRST
+  await stopNormalScanner();
+
+
+
+
+  // ================= STOP AUDIT =================
+
+if (auditScanning) {
+
+  // Warn if there are still queued items
+  if (auditQueue.length > 0 || auditProcessing) {
+
+    const pending = auditQueue.length + (auditProcessing ? 1 : 0);
+
+   const quit = await askQuitAudit(pending);
+
+if (!quit) {
+    return;
+}
+  }
+
+  auditScanning = false;
+
+  btn.innerHTML = "🔄 RE-INVENTORY";
+
+  scanBtn.disabled = false;
+  scanBtn.style.opacity = "1";
+  scanBtn.style.cursor = "pointer";
+
+  if (auditScanner) {
+    try {
+      await auditScanner.stop();
+      await auditScanner.clear();
+    } catch (e) {
+      console.log(e);
+    }
+
+    auditScanner = null;
+  }
+
+  document.getElementById("auditReader").style.display = "none";
+
+document.getElementById("auditCounter").style.display = "none";
+document.getElementById("auditCounter").innerHTML = "Scanned : 0";
+
+return;
+
+  return;
+}
+
+
+  // ================= START AUDIT =================
+
+
+  auditScanning = true;
+ auditQueue.length = 0;
+auditProcessing = false;
+auditRecent.clear();
+
+auditCount = 0;
+
+document.getElementById("auditCounter").style.display = "block";
+
+document.getElementById("auditCounter").innerHTML =
+"Scanned : 0";
+
+
+  btn.innerHTML = "⏹ STOP AUDIT";
+
+
+  scanBtn.disabled = true;
+  scanBtn.style.opacity = "0.5";
+  scanBtn.style.cursor = "not-allowed";
+
+
+  document.getElementById("auditReader").style.display="block";
+
+
+
+  const cameras = await Html5Qrcode.getCameras();
+
+
+  if(!cameras.length){
+
+    alert("No camera detected");
+
+    auditScanning=false;
+
+    btn.innerHTML="🔄 RE-INVENTORY";
+
+    return;
+
+  }
+
+
+
+  let cameraId = cameras[0].id;
+
+
+
+  for(let cam of cameras){
+
+    let label=(cam.label || "").toLowerCase();
+
+
+    if(label.includes("back") || label.includes("rear")){
+
+      cameraId=cam.id;
+      break;
+
+    }
+
+  }
+
+
+
+  auditScanner = new Html5Qrcode("auditReader");
+
+
+
+  try {
+
+
+    await auditScanner.start(
+
+      {
+        deviceId:{
+          exact:cameraId
+        }
+      },
+
+
+      {
+
+        fps:20,
+
+        qrbox:{
+          width:300,
+          height:300
+        },
+
+        aspectRatio:1,
+
+
+        videoConstraints:{
+
+          facingMode:"environment",
+
+          width:{
+            ideal:1920
+          },
+
+          height:{
+            ideal:1080
+          }
+
+        }
+
+      },
+
+
+     async (decodedText) => {
+
+    if (!auditScanning) return;
+
+    const barcode = decodedText.trim().toUpperCase();
+
+    // Ignore same barcode within 2 seconds
+    const now = Date.now();
+    const last = auditRecent.get(barcode) || 0;
+
+    if (now - last < 2000) return;
+
+    auditRecent.set(barcode, now);
+
+    // Cleanup old entries
+    for (const [k, t] of auditRecent) {
+        if (now - t > 10000) {
+            auditRecent.delete(k);
+        }
+    }
+
+    // Immediate feedback
+    beep();
+    vibrate();
+
+    // Don't queue the same barcode twice
+if (!auditQueue.includes(barcode)) {
+    auditQueue.push(barcode);
+    processAuditQueue();
+}
+
+}
+
+);      
+
+
+
+    // CAMERA AUTO FOCUS + ZOOM
+
+    try{
+
+
+      const video=document.querySelector("#auditReader video");
+
+
+      if(video && video.srcObject){
+
+
+        const track =
+        video.srcObject.getVideoTracks()[0];
+
+
+        if(track){
+
+
+          const capabilities =
+          track.getCapabilities();
+
+
+
+          if(
+            capabilities.focusMode &&
+            capabilities.focusMode.includes("continuous")
+          ){
+
+
+            await track.applyConstraints({
+
+              advanced:[
+                {
+                  focusMode:"continuous"
+                }
+              ]
+
+            });
+
+
+          }
+
+
+
+          if(capabilities.zoom){
+
+
+            await track.applyConstraints({
+
+              advanced:[
+                {
+                  zoom:2
+                }
+              ]
+
+            });
+
+
+          }
+
+
+        }
+
+      }
+
+
+    }
+
+    catch(e){
+
+      console.log(
+        "Audit camera enhancement:",
+        e
+      );
+
+    }
+
+
+
+  }
+
+  catch(e){
+
+
+    console.log(
+      "AUDIT CAMERA ERROR:",
+      e
+    );
+
+
+    alert(
+      "Cannot start audit camera:\n"+e
+    );
+
+
+    auditScanning=false;
+
+    btn.innerHTML="🔄 RE-INVENTORY";
+
+
+    document.getElementById("auditReader").style.display="none";
+    document.getElementById("auditCounter").style.display = "none";
+
+
+  }
+
+
+}
+  
+  
+
+  
+
+
+  async function saveAudit(barcode){
+
+const res = await fetch(
+API_URL+
+"?action=saveAudit"+
+"&barcode="+encodeURIComponent(barcode)+
+getSessionParams()
+);
+
+
+const data = await res.json();
+
+
+if(data.status==="RECORDED"){
+
+
+auditCount++;
+
+
+document.getElementById("auditCounter").innerHTML =
+"Scanned : " + auditCount;
+
+
+
+document.getElementById("result").innerHTML=`
+<div class="card green scan-animate">
+
+✅ AUDIT RECORDED
+
+<br><br>
+
+<b>${data.colO}</b><br>
+
+${data.colJ}
+
+<br><br>
+
+${barcode}
+
+</div>
+
+`;
+
+}
+
+else{
+
+alert(data.status);
+
+}
+
+}
+async function processAuditQueue(){
+
+    // Already processing?
+    if(auditProcessing) return;
+
+    auditProcessing = true;
+
+    while(auditQueue.length > 0 && auditScanning){
+
+        const barcode = auditQueue.shift();
+
+        try{
+
+            // Check item
+           const saveRes = await fetch(
+    API_URL +
+    "?action=saveAudit" +
+    "&barcode=" + encodeURIComponent(barcode) +
+    getSessionParams()
+);
+
+const saveData = await saveRes.json();
+
+if (saveData.status === "NOT_FOUND") {
+
+    document.getElementById("result").innerHTML = `
+    <div class="no-results">
+        ❌ ITEM NOT FOUND
+        <br><br>
+        ${barcode}
+    </div>`;
+
+    continue;
+}
+
+if (saveData.status === "ALREADY_AUDITED") {
+
+    document.getElementById("result").innerHTML = `
+    <div class="card red">
+        🛑 ALREADY AUDITED
+        <br><br>
+        ${barcode}
+    </div>`;
+
+    continue;
+}
+
+if (saveData.status === "RECORDED") {
+
+    auditCount++;
+
+    document.getElementById("auditCounter").innerHTML =
+        "Scanned : " + auditCount;
+
+    document.getElementById("result").innerHTML = `
+    <div class="card green scan-animate">
+        ✅ AUDIT RECORDED
+        <br><br>
+        <b>${saveData.colO}</b><br>
+        ${saveData.colJ || ""}
+        <br><br>
+        ${barcode}
+    </div>`;
+}
+
+        }catch(err){
+
+            console.log("Audit queue error:", err);
+
+            document.getElementById("result").innerHTML = `
+            <div class="card red">
+                ❌ NETWORK ERROR
+                <br><br>
+                ${barcode}
+            </div>`;
+        }
+    }
+
+    auditProcessing = false;
+}
+
+  
+
+  
+async function saveYes() {
+
+  console.log("========== saveYes() ==========");
+  console.log("tempCode:", tempCode);
+  console.log("tempSi:", tempSi);
+  console.log("isSaving:", isSaving);
+
+  if(!tempCode || !tempSi){
+
+  alert(
+    "Missing data\nBarcode: " + tempCode +
+    "\nSI: " + tempSi
+  );
+
+  return;
+
+}
+
+  
+
+if (isSaving) return;
+
+isSaving = true;
+
+const saveBtn = document.getElementById("saveBtn");
+
+if (saveBtn) {
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = "⏳ SAVING...";
+  saveBtn.style.opacity = "0.6";
+  saveBtn.style.cursor = "not-allowed";
+}
+
+
+  document.getElementById("result").innerHTML = `
+    <div class="card saving">
+      <div class="spinner"></div>
+      <div class="saving-text">
+        Saving data...
+      </div>
+    </div>
+  `;
+
+
+  try {
+
+    const res = await fetch(
+      API_URL +
+      "?action=save" +
+      "&barcode=" + encodeURIComponent(tempCode) +
+      "&siNo=" + encodeURIComponent(tempSi) +
+      getSessionParams()
+    );
+
+
+    const data = await res.json();
+
+
+    let row = data.row || [];
+    let colJ = data.colJ || row?.[9] || "";
+    let colO = data.colO || row?.[14] || "";
+
+
+    if (data.status === "ERROR") {
+
+    document.getElementById("result").innerHTML = `
+    <div class="card red">
+
+    ❌ ERROR
+
+    <br><br>
+
+    ${data.error}
+
+    <br><br>
+
+    🏷️ ${tempCode}
+
+    </div>
+    `;
+
+    isSaving = false;
+    return;
+}
+
+// SUCCESS
+document.getElementById("result").innerHTML = `
+<div class="card green scan-animate">
+
+✅ ADDED TO SOLD
+
+<br><br>
+
+<b>${colO}</b><br>
+
+${colJ ? `<small>${colJ}</small><br>` : ""}
+
+🏷️ ${tempCode}
+
+</div>
+`;
+
+tempCode = "";
+tempSi = "";
+
+}
+catch(err){
+
+    console.error(err);
+
+    document.getElementById("result").innerHTML = `
+    <div class="card red">
+        ❌ SAVE FAILED
+        <br><br>
+        ${err.message}
+    </div>
+    `;
+
+}
+finally{
+
+    isSaving = false;
+
+}
+}
+
+async function searchSI() {
+  clearUI();
+
+  const siNo = document.getElementById("siNo").value;
+
+  const res = await fetch(
+  API_URL +
+  "?action=searchSI" +
+  "&siNo=" + encodeURIComponent(siNo) +
+  getSessionParams()
+);
+  const data = await res.json();
+
+  const out = document.getElementById("searchResult");
+
+  if (!data.items?.length) {
+    out.innerHTML = `
+  <div class="no-results">
+    ❌ No results found
+  </div>
+`;
+    return;
+  }
+
+  out.innerHTML = data.items.map((item, idx) => `
+    <div class="card">
+      #${idx + 1}<br>
+      <b>${item.colO}</b><br>
+      ${item.colJ ? `<small>${item.colJ}</small><br>` : ""}
+      ${item.barcode}
+    </div>
+  `).join("");
+}
+
+/* ================= UTIL ================= */
+
+function clearUI() {
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("searchResult").innerHTML = "";
+}
+
+function cancelNo() {
+  document.getElementById("result").innerHTML = `
+  <div class="no-results">
+    ❌ CANCELLED
+  </div>
+`;
+}
+
+async function refreshPage() {
+
+ // STOP NORMAL CAMERA
+if(scanner){
+
+try{
+
+await scanner.stop();
+await scanner.clear();
+
+}catch(e){}
+
+scanner=null;
+
+}
+
+
+// STOP AUDIT CAMERA
+if(auditScanner){
+
+try{
+
+await auditScanner.stop();
+await auditScanner.clear();
+
+}catch(e){}
+
+auditScanner=null;
+
+}
+
+auditScanning=false;
+
+  auditCount=0;
+
+document.getElementById("auditCounter").style.display = "none";
+
+document.getElementById("auditCounter").innerHTML =
+"Scanned : 0";
+
+  isScanning = false;
+
+  setUIScanning(false);
+
+  // Stop audit scanner if running
+if(auditScanner){
+  try{
+    await auditScanner.stop();
+    await auditScanner.clear();
+  }
+  catch(e){
+    console.log(e);
+  }
+
+  auditScanner = null;
+}
+
+auditScanning = false;
+auditBusy = false;
+
+document.getElementById("auditReader").style.display = "none";
+document.getElementById("auditScanBtn").innerHTML = "🔄 RE-INVENTORY";
+
+  document.getElementById("scanBtn").disabled = false;
+document.getElementById("scanBtn").style.opacity = "1";
+document.getElementById("scanBtn").style.cursor = "pointer";
+
+
+  // Clear inputs
+  document.getElementById("tagNumberInput").value = "";
+
+  document.getElementById("siNo").value = "";
+
+
+  // Disable tag button
+  const tagBtn = document.getElementById("tagBtn");
+
+  if(tagBtn){
+    tagBtn.disabled = true;
+    tagBtn.style.opacity = "0.5";
+  }
+
+
+  // Clear results
+  clearUI();
+
+
+  // Put cursor back to SI
+  document.getElementById("siNo").focus();
+
+}
+function showTagDialog(){
+
+    document.getElementById("tagNumberInput").value = "";
+    document.getElementById("tagDialog").style.display = "flex";
+
+}
+
+
+function closeTagDialog(){
+
+document.getElementById("tagDialog").style.display="none";
+
+}
+
+
+async function searchTagNumber(){
+
+
+const tag =
+document.getElementById("tagNumberInput")
+.value.trim();
+
+const siNo =
+document.getElementById("siNo")
+.value.trim();
+
+if(!siNo){
+  alert("Enter SI No first");
+  return;
+}
+
+if(!tag){
+  alert("Enter Tag Number");
+  return;
+}
+
+const res = await fetch(
+  API_URL +
+  "?action=checkTag" +
+  "&tag=" + encodeURIComponent(tag) +
+  getSessionParams()
+);
+
+const data = await res.json();
+
+
+// ================= DUPLICATE =================
+if(data.status==="DUPLICATE"){
+
+document.getElementById("result").innerHTML=`
+
+<div class="card red">
+
+🛑 ALREADY SOLD
+
+<br><br>
+
+<b>${data.colO}</b><br>
+
+${data.colJ ? `<small>${data.colJ}</small><br>` : ""}
+
+🏷 TAG:
+<b>${tag}</b>
+
+</div>
+
+`;
+
+closeTagDialog();
+return;
+
+}
+
+
+// ================= FOUND =================
+if(data.status==="FOUND"){
+
+tempCode=data.barcode;
+tempSi=siNo;
+
+document.getElementById("result").innerHTML=`
+
+<div class="card green scan-animate">
+
+✅ AVAILABLE<br><br>
+
+<b>${data.colO}</b><br>
+
+${data.colJ ? `<small>${data.colJ}</small><br>` : ""}
+
+🏷 TAG:
+<b>${tag}</b>
+
+<br><br>
+
+<button
+id="saveBtn"
+class="btn-blue"
+onclick="saveYes()">
+
+ADD TO SOLD
+
+</button>
+
+<button
+class="btn-orange"
+onclick="cancelNo()">
+
+CANCEL
+
+</button>
+
+</div>
+
+`;
+
+closeTagDialog();
+return;
+
+}
+
+
+// ================= NOT FOUND =================
+
+document.getElementById("result").innerHTML=`
+
+<div class="no-results">
+
+❌ TAG NUMBER NOT FOUND
+
+</div>
+
+`;
+
+closeTagDialog();
+
+}  
+
+
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function beep() {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "square";
+  osc.frequency.value = 900;
+  gain.gain.value = 0.15;
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.12);
+}
+
+function vibrate() {
+  if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+}
+
+document.addEventListener("click", initAudio, { once: true });
+
+async function logout() {
+
+
+const session =
+JSON.parse(
+localStorage.getItem("inventorySession_"+BRANCH)
+|| "{}"
+);
+
+
+const email=session.email || "";
+const sessionId=session.sessionId || "";
+
+
+// CLEAR LOCAL FIRST
+
+
+localStorage.removeItem(
+"inventorySession_"+BRANCH
+);
+
+localStorage.removeItem("loginTime");
+
+
+// STOP CAMERA
+if(scanner){
+
+try{
+
+await scanner.stop();
+await scanner.clear();
+
+}catch(e){}
+
+scanner=null;
+
+}
+
+
+try{
+
+await fetch(
+API_URL+
+"?action=logout"+
+"&email="+encodeURIComponent(email)+
+"&sessionId="+encodeURIComponent(sessionId)
+);
+
+}catch(e){
+
+console.log(e);
+
+}
+
+
+location.reload();
+
+}
+
+function checkLoginExpiry(){
+
+  const loginTime = localStorage.getItem("loginTime");
+
+  if(!loginTime){
+    return;
+  }
+
+  const now = Date.now();
+
+  const maxTime = 13 * 60 * 60 * 1000; // 13 hours
+  if(now - Number(loginTime) > maxTime){
+
+    
+   Object.keys(localStorage).forEach(key=>{
+
+if(key.startsWith("inventorySession_")){
+
+localStorage.removeItem(key);
+
+}
+
+});
+    localStorage.removeItem("loginTime");
+   
+
+    alert("Session expired. Please login again.");
+
+    location.reload();
+
+  }
+
+}
+  document.getElementById("email").addEventListener("keydown",e=>{
+    if(e.key==="Enter") sendOTP();
+});
+
+document.getElementById("otp").addEventListener("keydown",e=>{
+    if(e.key==="Enter") verifyOTP();
+});
+
+function checkGatewayAccess(){
+
+const branch =
+sessionStorage.getItem("selectedBranch");
+
+
+if(branch === BRANCH){
+
+return true;
+
+}
+
+return false;
+
+}
+  
+
+window.addEventListener("DOMContentLoaded", async function(){
+
+  
+
+if(!checkGatewayAccess()){
+
+document.body.innerHTML = `
+
+<div style="
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:Arial;
+background:#eef2f7;
+">
+
+<div style="
+background:white;
+padding:30px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 10px 30px rgba(0,0,0,.2);
+">
+
+<h2>🔒 ACCESS DENIED</h2>
+
+<p>
+Please open the system from the main website.
+</p>
+
+</div>
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+checkLoginExpiry();
+
+  const session =
+JSON.parse(
+localStorage.getItem("inventorySession_"+BRANCH)
+|| "{}"
+);
+
+
+const email = session.email || "";
+const sessionId = session.sessionId || "";
+
+
+  // NO SAVED LOGIN
+  if(!email || !sessionId){
+
+    document.getElementById("loginScreen").style.display="flex";
+    document.getElementById("app").style.display="none";
+
+    return;
+  }
+
+
+  try {
+
+    const res = await fetch(
+      API_URL +
+      "?action=checkSession" +
+      "&email=" + encodeURIComponent(email) +
+      "&sessionId=" + encodeURIComponent(sessionId)
+    );
+
+
+    const data = await res.json();
+
+
+    if(data.status === "VALID"){
+
+      // KEEP LOGIN
+      document.getElementById("loginScreen").style.display="none";
+      document.getElementById("app").style.display="block";
+      checkReportAccess();
+
+    }
+    else {
+
+      // ONLY REMOVE IF SERVER REALLY SAYS INVALID
+      
+     Object.keys(localStorage).forEach(key=>{
+
+if(key.startsWith("inventorySession_")){
+
+localStorage.removeItem(key);
+
+}
+
+});
+      localStorage.removeItem("loginTime");
+      
+
+
+      document.getElementById("loginScreen").style.display="flex";
+      document.getElementById("app").style.display="none";
+
+    }
+
+
+  } catch(error){
+
+    console.log("Session check failed:", error);
+
+
+    // KEEP USER LOGGED IN IF INTERNET TEMPORARILY FAILS
+    document.getElementById("loginScreen").style.display="none";
+    document.getElementById("app").style.display="block";
+
+  }
+
+
+});
+
+
+  const siInput = document.getElementById("siNo");
+
+siInput.addEventListener("input",function(){
+
+const btn=document.getElementById("tagBtn");
+
+if(this.value.trim()==""){
+
+btn.disabled=true;
+btn.style.opacity="0.5";
+
+}
+else{
+
+btn.disabled=false;
+btn.style.opacity="1";
+
+}
+
+});
+
+function showReportDialog() {
+
+    // Clear previous selections
+    document.querySelectorAll(".recipient-card").forEach(card => {
+        card.classList.remove("selected");
+    });
+
+    document.getElementById("reportDialog").style.display = "flex";
+
+}
+
+function closeReportDialog() {
+
+    document.getElementById("reportDialog").style.display = "none";
+
+}
+
+
+// CLICK CARD TO SELECT
+document.querySelectorAll(".recipient-card").forEach(card => {
+
+    card.addEventListener("click", function () {
+
+        this.classList.toggle("selected");
+
+    });
+
+});
+
+
+async function sendSelectedReport() {
+
+    const selectedCards =
+        document.querySelectorAll(".recipient-card.selected");
+
+    if (selectedCards.length === 0) {
+
+        alert("Please select at least one recipient.");
+
+        return;
+
+    }
+
+    const emails = [...selectedCards]
+        .map(card => card.dataset.email)
+        .join(",");
+
+
+    closeReportDialog();
+  document.querySelectorAll(".recipient-card").forEach(card=>{
+    card.classList.remove("selected");
+});
+
+
+    showReportMessage(`
+        <div class="spinner"></div>
+        <div class="saving-text">
+            Sending report...
+        </div>
+    `);
+
+
+    try {
+
+const reportType =
+document.getElementById("reportType").value;
+
+const res = await fetch(
+
+            API_URL +
+            "?action=sendReport" +
+            "&type=" + encodeURIComponent(reportType) +
+            "&emails=" + encodeURIComponent(emails) +
+            getSessionParams()
+
+        );
+
+        const data = await res.json();
+
+        if (data.status === "REPORT SENT") {
+
+            showReportMessage(`
+                ✅ <b>REPORT SENT</b><br><br>
+                📧 Sent to:<br>
+                <small>${emails.replaceAll(",", "<br>")}</small>
+            `);
+
+        } else {
+
+            showReportMessage("❌ " + data.status);
+
+        }
+
+    } catch (err) {
+
+        showReportMessage("❌ SERVER ERROR");
+
+        console.log(err);
+
+    }
+
+}
+
+
+  function showReportMessage(message){
+
+  const result =
+  document.getElementById("result");
+
+
+  result.innerHTML = `
+
+  <div class="card green scan-animate"
+  style="
+  text-align:center;
+  font-size:18px;
+  padding:25px;
+  ">
+
+  ${message}
+
+  </div>
+
+  `;
+
+}
+
+function showClearDialog(){
+    document.getElementById("clearDialog").style.display = "flex";
+}
+
+function closeClearDialog(){
+    document.getElementById("clearDialog").style.display = "none";
+}
+
+async function clearReport(sheet){
+
+    const displayName =
+        sheet === "SCANRESULTS" ? "Sold Out" :
+        sheet === "AUDIT" ? "Re-Inventory" :
+        sheet;
+
+    if(!confirm(
+        "Clear all records from " + displayName + "?\n\nThis cannot be undone."
+    )) return;
+
+   if (sheet === "SCANRESULTS") {
+
+        const password = prompt(
+            "Enter administrator password to clear the Sold Out report:"
+        );
+
+        if (password === null) return;
+
+        if (password !== "12345") {
+            alert("❌ Incorrect password.");
+            return;
+        }
+    }
+  
+
+    closeClearDialog();
+
+    document.getElementById("result").innerHTML = `
+    <div class="card saving">
+        <div class="spinner"></div>
+        Clearing report...
+    </div>`;
+
+    try{
+
+        const res = await fetch(
+            API_URL +
+            "?action=clearReport" +
+            "&sheet=" + encodeURIComponent(sheet) +
+            getSessionParams()
+        );
+
+        const data = await res.json();
+
+        if(data.status=="OK"){
+
+            document.getElementById("result").innerHTML = `
+            <div class="card green">
+                ✅ REPORT CLEARED
+            </div>`;
+
+        }else{
+
+            document.getElementById("result").innerHTML = `
+            <div class="card red">
+                ❌ ${data.status}
+            </div>`;
+
+        }
+
+    }catch(err){
+
+        document.getElementById("result").innerHTML = `
+        <div class="card red">
+            ❌ SERVER ERROR
+        </div>`;
+
+    }
+}
+
+
+
+  
+ async function uploadStockFile(file){
+
+    if(!file){
+        alert("❌ No file selected");
+        return;
+    }
+
+
+    if(!checkStockAccess()){
+
+        alert("❌ NO ACCESS");
+        return;
+
+    }
+
+
+    // Check file type
+    const allowed = [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel"
+    ];
+
+    if(!allowed.includes(file.type)){
+
+        alert("❌ Please upload Excel file only");
+
+        return;
+
+    }
+
+
+    // Optional size check
+    if(file.size > 10 * 1024 * 1024){
+
+        alert(
+          "❌ File too large\n\nMaximum 10MB"
+        );
+
+        return;
+
+    }
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = async function(e){
+
+        try {
+
+
+            // REMOVE DATA URL HEADER
+            const base64 =
+            e.target.result.split(",")[1];
+
+
+            const params =
+            new URLSearchParams();
+
+
+            params.append(
+                "action",
+                "uploadStock"
+            );
+
+
+            params.append(
+                "file",
+                base64
+            );
+
+
+            params.append(
+                "fileName",
+                file.name
+            );
+
+
+            const session =
+            JSON.parse(
+            localStorage.getItem(
+                "inventorySession_"+BRANCH
+            ) || "{}"
+            );
+
+
+            params.append(
+                "email",
+                session.email || ""
+            );
+
+
+            params.append(
+                "sessionId",
+                session.sessionId || ""
+            );
+
+
+            document.getElementById("result").innerHTML = `
+
+            <div class="card saving">
+
+            <div class="spinner"></div>
+
+            Uploading stock file...
+
+            </div>
+
+            `;
+
+
+
+            const res = await fetch(
+                API_URL,
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                        "application/x-www-form-urlencoded;charset=UTF-8"
+                    },
+
+                    body:params.toString()
+
+                }
+            );
+
+
+
+         const text = await res.text();
+
+console.log("RAW SERVER RESPONSE:");
+console.log(text);
+
+let data;
+
+try{
+    data = JSON.parse(text);
+}catch(e){
+    document.getElementById("result").innerHTML = `
+        <div class="card red">
+            ❌ SERVER DID NOT RETURN JSON
+            <br><br>
+            <pre style="white-space:pre-wrap;font-size:12px;">${text}</pre>
+        </div>
+    `;
+    return;
+}
+
+console.log("UPLOAD RESPONSE:", data);
+
+
+
+           if(data.status === "OK"){
+
+
+    document.getElementById("result").innerHTML = `
+
+    <div class="card green scan-animate">
+
+    ✅ STOCK UPDATED
+
+    <br><br>
+
+    ITEMS:
+    <b>${data.rows}</b>
+
+    </div>
+
+    `;
+
+
+    // reset only the file input
+    document.getElementById("stockFile").value = "";
+
+
+}
+            else{
+
+
+                document.getElementById("result").innerHTML = `
+
+                <div class="card red">
+
+                ❌ UPLOAD FAILED
+
+                <br><br>
+
+                ${data.status}
+
+                </div>
+
+                `;
+
+
+            }
+
+
+
+        }
+        catch(err){
+
+
+            console.error(
+                "UPLOAD ERROR:",
+                err
+            );
+
+
+            document.getElementById("result").innerHTML = `
+
+            <div class="card red">
+
+            ❌ UPLOAD ERROR
+
+            <br><br>
+
+            ${err.message}
+
+            </div>
+
+            `;
+
+
+        }
+
+
+    };
+
+
+    reader.onerror = function(){
+
+        alert(
+          "❌ Cannot read file"
+        );
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+
+}
+
+function askQuitAudit(pending){
+
+    document.getElementById("quitAuditMessage").innerHTML = `
+        ⚠ <b>${pending}</b> queued item(s) are still waiting to be processed.<br><br>
+
+        If you stop now, those items <b>will NOT be saved.</b><br><br>
+
+        Do you really want to stop Re-Inventory?
+    `;
+
+    document.getElementById("quitAuditDialog").style.display="flex";
+
+    return new Promise(resolve=>{
+        quitAuditResolve = resolve;
+    });
+
+}
+
+function confirmQuitAudit(){
+
+    document.getElementById("quitAuditDialog").style.display="none";
+
+    if(quitAuditResolve){
+        quitAuditResolve(true);
+        quitAuditResolve=null;
+    }
+
+}
+
+function cancelQuitAudit(){
+
+    document.getElementById("quitAuditDialog").style.display="none";
+
+    if(quitAuditResolve){
+        quitAuditResolve(false);
+        quitAuditResolve=null;
+    }
+
+}
+
+
+  
+  
+
+
+ 
 window.onload=function(){
 
 document.getElementById("loginScreen").style.display="flex";
