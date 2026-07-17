@@ -252,12 +252,12 @@ VERIFY OTP
 <thead>
 <tr>
 <th>Branch</th>
- <th>Lenstype</th>
- <th>Description</th>
+<th>Lenstype</th>
+<th>Description</th>
 <th>Tag</th>
 <th>SI</th>
-
 <th>Date</th>
+<th>Actions</th>
 </tr>
 </thead>
  
@@ -300,7 +300,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyLaAlUkkop53bAyqgEhOCw1VDK7VswS6lMFmbntyAwNrgCHPc-gfrdLu_cJ6IDb2L8Pw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwuDMDli0LBs_E_d4cbn-kp2BWf_d6jONbVoSSJYbJ-jl7bbcu6pEyunqDasKKYpwhHSA/exec";
 
 
 
@@ -708,16 +708,25 @@ function renderTable(rows){
         return;
     }
 
-    body.innerHTML=rows.map(r=>`
-        <tr>
-            <td>${r.branch}</td>           
-            <td>${r.lenstype}</td>
-             <td>${r.description}</td>
-            <td>${r.tag}</td>
-            <td>${r.si}</td>
-            <td>${r.date}</td>
-        </tr>
-    `).join("");
+    body.innerHTML = rows.map(r => `
+<tr>
+    <td>${r.branch}</td>
+    <td>${r.lenstype}</td>
+    <td>${r.description}</td>
+    <td>${r.tag}</td>
+    <td>${r.si}</td>
+    <td>${r.date}</td>
+
+    <td>
+        <button onclick="editItem('${r.branch}',${r.row})">✏ Edit
+</button>
+
+<button onclick="deleteItem('${r.branch}',${r.row})">
+🗑 Delete
+</button>
+    </td>
+</tr>
+`).join("");
 }
 
 
@@ -749,6 +758,50 @@ loadDashboard();
 
 });
 
+
+function editItem(branch, row){
+
+    alert(
+        "Branch: " + branch +
+        "\nSpreadsheet Row: " + row
+    );
+
+}
+
+async function deleteItem(branch, row){
+
+    if(!confirm("Delete this record?")) return;
+
+    const sheet =
+document.getElementById("sheetSelect").value;
+
+const res = await fetch(
+    API_URL +
+    "?action=deleteRecord" +
+    "&branch=" + encodeURIComponent(branch) +
+    "&sheet=" + encodeURIComponent(sheet) +
+    "&row=" + row +
+    getSessionParams()
+);
+
+    const data = await res.json();
+
+    if(data.status=="OK"){
+
+        alert("Deleted successfully.");
+
+        loadDashboard();
+
+    }else{
+
+        alert(data.message);
+
+    }
+
+}
+
+
+ 
 
   
   
