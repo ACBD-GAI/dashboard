@@ -319,7 +319,10 @@ async function sendOTP(){
         "?action=sendOTP&email="+encodeURIComponent(email)
     );
 
-    const data=await res.json();
+    const text = await res.text();
+console.log(text);
+
+const data = JSON.parse(text);
 
     if(data.status==="OTP_SENT"){
 
@@ -530,70 +533,70 @@ async function loadDashboard(){
     const branch =
     document.getElementById("branchSelect").value;
 
-
     const sheet =
     document.getElementById("sheetSelect").value;
 
-
     document.getElementById("loading").style.display="flex";
-
 
     try{
 
         const res = await fetch(
-    API_URL+
-    "?action=summary"+
-    "&branch="+branch+
-    "&sheet="+sheet
-);
+            API_URL+
+            "?action=summary"+
+            "&branch="+encodeURIComponent(branch)+
+            "&sheet="+encodeURIComponent(sheet)
+        );
 
-const text = await res.text();
+        const text = await res.text();
 
-console.log("SERVER RESPONSE:",text);
+        console.log("SERVER RESPONSE:", text);
 
-const data = JSON.parse(text);
+        const data = JSON.parse(text);
 
-if(data.status !== "OK"){
-    alert(data.message);
-    document.getElementById("loading").style.display="none";
-    return;
+
+        if(data.status !== "OK"){
+
+            alert(data.message || "Server error");
+
+            return;
+        }
+
+
+        renderTable(data.data);
+
+
+        document.getElementById("stockCount").textContent =
+        data.total;
+
+
+        document.getElementById("soldCount").textContent =
+        sheet==="SCANRESULTS" ? data.total : 0;
+
+
+        document.getElementById("auditCount").textContent =
+        sheet==="AUDIT" ? data.total : 0;
+
+
+        document.getElementById("showingCount").textContent =
+        data.data.length;
+
+
+    }catch(err){
+
+        console.error("DASHBOARD ERROR:",err);
+
+        alert(
+            "Dashboard Error:\n"+
+            err.message
+        );
+
+    }finally{
+
+        document.getElementById("loading").style.display="none";
+
+    }
+
 }
-
-renderTable(data.data);
-
-// Total records loaded
-document.getElementById("stockCount").textContent = data.total;
-
-// Temporary counts
-document.getElementById("soldCount").textContent =
-    document.getElementById("sheetSelect").value==="SCANRESULTS"
-        ? data.total : 0;
-
-document.getElementById("auditCount").textContent =
-    document.getElementById("sheetSelect").value==="AUDIT"
-        ? data.total : 0;
-
-document.getElementById("showingCount").textContent =
-    data.data.length;
-
-
-   catch(err){
-
-    console.error("DASHBOARD ERROR:", err);
-
-    alert(
-        "Dashboard Error:\n"+
-        err.message
-    );
-
-}
-
-
-    document.getElementById("loading").style.display="none";
-
-}
-
-
 
 function renderTable(rows){
 
