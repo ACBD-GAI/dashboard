@@ -299,7 +299,7 @@ No data loaded.
 const BRANCH="DASHBOARD";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwwbhBbkSxTaIR_MtEC3niRPCDXMYWL6u6yO7TrF74JEbZSMdTE-48JBI5U_AeiUHhbjA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzHT7R9T0S_Gsr9x6xjRDXwj2A0RSFrlQv-eaYFQxjmB0DaqWqqZU_SWEQSsACmToQzow/exec";
 
 
 
@@ -633,51 +633,7 @@ document.getElementById("sheetSelect").onchange =
 loadDashboard;
 
 
- function renderTable(rows){
-
-
-const body=document.getElementById("tableBody");
-
-
-body.innerHTML="";
-
-
-document.getElementById("showingCount").innerHTML=
-rows.length;
-
-
-
-rows.forEach(r=>{
-
-
-body.innerHTML+=`
-
-<tr>
-
-<td>${r.branch}</td>
-
-<td>${r.barcode}</td>
-
-<td>${r.description}</td>
-
-<td>${r.tag}</td>
-
-<td>${r.si}</td>
-
-<td>${r.qty}</td>
-
-<td>${r.date}</td>
-
-</tr>
-
-
-`;
-
-
-});
-
-
-}
+ 
 
 
   
