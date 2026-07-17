@@ -1,5 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
+
+
+
+  <div id="loginScreen" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#eef2f7;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+<div style="
+background:white;
+padding:40px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+text-align:center;
+width:340px;
+">
+
+<h2>🔐 ADMIN LOGIN</h2>
+
+<p>Dashboard Access</p>
+
+<input
+id="email"
+type="email"
+placeholder="Enter Gmail"
+style="
+width:100%;
+padding:14px;
+margin-bottom:15px;
+border-radius:10px;
+border:1px solid #ccc;
+">
+
+<button
+style="
+width:100%;
+padding:14px;
+background:#2196f3;
+color:white;
+border:none;
+border-radius:10px;
+font-weight:bold;
+"
+onclick="sendOTP()">
+SEND OTP
+</button>
+
+<input
+id="otp"
+placeholder="Enter OTP"
+style="
+display:none;
+width:100%;
+padding:14px;
+margin-top:15px;
+border-radius:10px;
+border:1px solid #ccc;
+">
+
+<button
+id="verifyBtn"
+style="
+display:none;
+width:100%;
+padding:14px;
+margin-top:15px;
+background:#2196f3;
+color:white;
+border:none;
+border-radius:10px;
+font-weight:bold;
+"
+onclick="verifyOTP()">
+VERIFY OTP
+</button>
+
+<p id="loginStatus"></p>
+
+</div>
+
+</div>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -50,6 +139,8 @@ th,td{font-size:13px}
 </style>
   
 <body>
+
+<div id="app" style="display:none;">
 
 <header class="header">
   <div class="header-left">
@@ -169,5 +260,16 @@ No data loaded.
 
 <script src="script.js"></script>
 
+</div>
+<SCRIPT>
+window.onload=function(){
+
+document.getElementById("loginScreen").style.display="flex";
+
+document.getElementById("app").style.display="none";
+
+};
+
+</SCRIPT>  
 </body>
 </html>
