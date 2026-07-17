@@ -299,7 +299,7 @@ No data loaded.
 const BRANCH="DASHBOARD";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzHT7R9T0S_Gsr9x6xjRDXwj2A0RSFrlQv-eaYFQxjmB0DaqWqqZU_SWEQSsACmToQzow/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxu2Qw8KFDnhrt7hmJzVqzLqusdhafALntNnHrex13ch8bMduuynHM1JyeY54LAN4qZ_w/exec";
 
 
 
@@ -548,10 +548,29 @@ async function loadDashboard(){
         );
 
 
-        const data = await res.json();
+      const data = await res.json();
 
+if(data.status !== "OK"){
+    alert(data.message);
+    return;
+}
 
-        renderTable(data.data);
+renderTable(data.data);
+
+// Total records loaded
+document.getElementById("stockCount").textContent = data.total;
+
+// Temporary counts
+document.getElementById("soldCount").textContent =
+    document.getElementById("sheetSelect").value==="SCANRESULTS"
+        ? data.total : 0;
+
+document.getElementById("auditCount").textContent =
+    document.getElementById("sheetSelect").value==="AUDIT"
+        ? data.total : 0;
+
+document.getElementById("showingCount").textContent =
+    data.data.length;
 
 
     }catch(err){
