@@ -296,7 +296,7 @@ No data loaded.
 
 
 
-const BRANCH="DASHBOARD";
+const SESSION_KEY = "inventorySession";
 
 
 const API_URL = "https://script.google.com/macros/s/AKfycbzWq69YWc6HU3RzOdbviAqDkDzZ_DbH32yNY4W971h7jiAsUVrHUeqjtqRNE3qRbc515Q/exec";
@@ -414,10 +414,18 @@ console.log(data);
             })
         );
 
-        localStorage.setItem(
-            "loginTime",
-            Date.now()
-        );
+      localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({
+        email: email,
+        sessionId: data.sessionId
+    })
+);
+
+localStorage.setItem(
+    "loginTime",
+    Date.now()
+);
 
         document.getElementById("loginScreen").style.display="none";
         document.getElementById("app").style.display="block";
@@ -452,24 +460,24 @@ async function logout(){
 
     }catch(e){}
 
-    localStorage.removeItem("inventorySession_"+BRANCH);
-    localStorage.removeItem("loginTime");
+    localStorage.removeItem(SESSION_KEY);
+localStorage.removeItem("loginTime");
 
-    location.reload();
+location.reload();
 
 }
 
 function getSessionParams(){
 
-    const session=
+    const session =
     JSON.parse(
-        localStorage.getItem("inventorySession_"+BRANCH)
+        localStorage.getItem(SESSION_KEY)
         || "{}"
     );
 
     return (
-        "&email="+encodeURIComponent(session.email||"")+
-        "&sessionId="+encodeURIComponent(session.sessionId||"")
+        "&email=" + encodeURIComponent(session.email || "") +
+        "&sessionId=" + encodeURIComponent(session.sessionId || "")
     );
 
 }
@@ -501,11 +509,11 @@ window.addEventListener("DOMContentLoaded",async()=>{
 
     checkLoginExpiry();
 
-    const session=
-    JSON.parse(
-        localStorage.getItem("inventorySession_"+BRANCH)
-        || "{}"
-    );
+  const session =
+JSON.parse(
+    localStorage.getItem(SESSION_KEY)
+    || "{}"
+);
 
     if(!session.email){
 
@@ -553,7 +561,7 @@ const data = JSON.parse(text);
 
     console.error("SESSION ERROR:",e);
 
-    localStorage.removeItem("inventorySession_"+BRANCH);
+    
 
     document.getElementById("loginScreen").style.display="flex";
     document.getElementById("app").style.display="none";
