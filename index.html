@@ -52,6 +52,30 @@ th,td{font-size:13px}
 }
 
 
+.header button,
+#searchBtn,
+#verifyBtn,
+button {
+    transition: all .2s ease;
+}
+
+.header button:hover,
+#searchBtn:hover,
+#verifyBtn:hover,
+button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(0,0,0,.18);
+    filter:brightness(1.05);
+}
+
+.header button:active,
+#searchBtn:active,
+#verifyBtn:active,
+button:active{
+    transform:scale(.97);
+}
+ 
+
   
 </style>
  </head>
@@ -334,7 +358,10 @@ async function verifyOTP(){
         "&otp="+encodeURIComponent(otp)
     );
 
-    const data=await res.json();
+    const data = await res.json();
+
+console.log(data);
+alert(JSON.stringify(data));
 
     if(data.status==="OK"){
 
