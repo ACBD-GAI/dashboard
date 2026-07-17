@@ -300,7 +300,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyq9AIj0foiRSWpv6R_K1pFs88KSK150NU4mfqOPacouCZrqwPwJ3ArlAn4gOWSp6K8Wg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyLaAlUkkop53bAyqgEhOCw1VDK7VswS6lMFmbntyAwNrgCHPc-gfrdLu_cJ6IDb2L8Pw/exec";
 
 
 
@@ -662,38 +662,14 @@ getSessionParams()
         renderTable(data.data);
 
 
-        if(sheet==="stocks"){
-
-document.getElementById("stockCount").textContent =
-data.total;
-
-}
-
-
-if(sheet==="SCANRESULTS"){
-
-document.getElementById("soldCount").textContent =
-data.total;
-
-}
-
-
-if(sheet==="AUDIT"){
-
-document.getElementById("auditCount").textContent =
-data.total;
-
-}
-
-
        document.getElementById("stockCount").textContent =
-    sheet==="stocks" ? data.total : 0;
+    data.availableTotal;
 
 document.getElementById("soldCount").textContent =
-    sheet==="SCANRESULTS" ? data.total : 0;
+    data.soldTotal;
 
 document.getElementById("auditCount").textContent =
-    sheet==="AUDIT" ? data.total : 0;
+    data.auditTotal;
 
 
         document.getElementById("showingCount").textContent =
