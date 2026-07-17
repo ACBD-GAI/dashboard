@@ -214,7 +214,7 @@ VERIFY OTP
 
 <div class="field search">
 <label>Search</label>
-<input id="searchBox" placeholder="Barcode, Tag, SI, Description">
+<input id="searchBox" placeholder="Tag, SI, Description">
 </div>
 
 <button id="searchBtn">🔍 Search</button>
@@ -299,7 +299,7 @@ No data loaded.
 const BRANCH="DASHBOARD";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxaOqfenqOSM8n5wBbY-o21Is4BMlXfuz9-nXpIDJCiAdEy5tLuafgV04XXI_03KBGWkg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyY7bsE3fBu0zRMFmSPoxVnhqmh8T8MWuTaDDGZrnyYu6HTxU4ULeHQzAte21C2mtJp6w/exec";
 
 
 
@@ -551,12 +551,21 @@ async function loadDashboard(){
 
     try{
 
-       const res = await fetch(
-    API_URL+
-    "?action=summary"+
-    "&branch="+encodeURIComponent(branch)+
-    "&sheet="+encodeURIComponent(sheet)+
-    getSessionParams()
+       const search =
+document.getElementById("searchBox").value.trim();
+
+
+const search =
+document.getElementById("searchBox").value.trim();
+
+
+const res = await fetch(
+API_URL+
+"?action=summary"+
+"&branch="+encodeURIComponent(branch)+
+"&sheet="+encodeURIComponent(sheet)+
+"&search="+encodeURIComponent(search)+
+getSessionParams()
 );
 
         const text = await res.text();
@@ -577,8 +586,28 @@ async function loadDashboard(){
         renderTable(data.data);
 
 
-        document.getElementById("stockCount").textContent =
-        data.total;
+        if(sheet==="stocks"){
+
+document.getElementById("stockCount").textContent =
+data.total;
+
+}
+
+
+if(sheet==="SCANRESULTS"){
+
+document.getElementById("soldCount").textContent =
+data.total;
+
+}
+
+
+if(sheet==="AUDIT"){
+
+document.getElementById("auditCount").textContent =
+data.total;
+
+}
 
 
         document.getElementById("soldCount").textContent =
@@ -675,7 +704,14 @@ document.getElementById("sheetSelect").onchange =
 loadDashboard;
 
 
- 
+ document.getElementById("searchBox")
+.addEventListener("keydown",e=>{
+
+if(e.key==="Enter"){
+loadDashboard();
+}
+
+});
 
 
   
