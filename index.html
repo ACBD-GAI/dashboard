@@ -541,17 +541,21 @@ async function loadDashboard(){
     try{
 
         const res = await fetch(
-            API_URL+
-            "?action=summary"+
-            "&branch="+branch+
-            "&sheet="+sheet
-        );
+    API_URL+
+    "?action=summary"+
+    "&branch="+branch+
+    "&sheet="+sheet
+);
 
+const text = await res.text();
 
-      const data = await res.json();
+console.log("SERVER RESPONSE:",text);
+
+const data = JSON.parse(text);
 
 if(data.status !== "OK"){
     alert(data.message);
+    document.getElementById("loading").style.display="none";
     return;
 }
 
@@ -573,12 +577,16 @@ document.getElementById("showingCount").textContent =
     data.data.length;
 
 
-    }catch(err){
+   catch(err){
 
-        console.log(err);
-        alert(err);
+    console.error("DASHBOARD ERROR:", err);
 
-    }
+    alert(
+        "Dashboard Error:\n"+
+        err.message
+    );
+
+}
 
 
     document.getElementById("loading").style.display="none";
