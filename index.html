@@ -299,7 +299,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzWq69YWc6HU3RzOdbviAqDkDzZ_DbH32yNY4W971h7jiAsUVrHUeqjtqRNE3qRbc515Q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzltdna0QV2k3qiRe0TiSX01aNX5rpsLtM8ef1aHgW4xvqqAhKGmTD03RgM2zMut2aBTw/exec";
 
 
 
@@ -308,10 +308,14 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzWq69YWc6HU3RzOdbviAqD
 async function sendOTP(){
 
     const email=document.getElementById("email").value.trim();
+ const status = document.getElementById("loginStatus");
 
     if(!email){
-        alert("Enter Gmail");
-        return;
+       
+status.style.color="#dc3545";
+status.innerHTML="❌ Enter your Gmail.";
+return;
+     
     }
 
 
@@ -322,27 +326,37 @@ async function sendOTP(){
         "?action=sendOTP&email="+encodeURIComponent(email);
 
 
-        alert("Sending OTP...");
+    
+
+status.style.color = "#1976d2";
+status.innerHTML = "⏳ Sending OTP...";
 
 
         const res = await fetch(url);
 
 
-        const text = await res.text();
+      const text = await res.text();
+console.log("SEND OTP:", text);
 
-
-        alert("SERVER RESPONSE:\n"+text);
-
-
-        const data = JSON.parse(text);
+let data;
+try{
+    data = JSON.parse(text);
+}catch(e){
+    status.style.color="#dc3545";
+    status.innerHTML="❌ Server returned invalid response.";
+    console.error(text);
+    return;
+}
 
 
 
         if(data.status==="OTP_SENT"){
 
 
-            document.getElementById("loginStatus").innerHTML =
-            "✅ OTP sent to Gmail";
+
+
+status.style.color = "#28a745";
+status.innerHTML = "✅ OTP sent. Please check your Gmail.";
 
 
             document.getElementById("otp").style.display="block";
@@ -358,16 +372,19 @@ async function sendOTP(){
         else if(data.status==="EMAIL_DENIED"){
 
 
-            document.getElementById("loginStatus").innerHTML =
-            "❌ Gmail not allowed";
+         
 
+status.style.color = "#dc3545";
+status.innerHTML = "❌ This Gmail is not authorized.";
 
         }
         else{
 
 
-            document.getElementById("loginStatus").innerHTML =
-            "❌ "+text;
+         
+
+status.style.color = "#dc3545";
+status.innerHTML = "❌ " + (data.message || "Unable to send OTP.");
 
 
         }
@@ -376,66 +393,80 @@ async function sendOTP(){
     }
     catch(err){
 
-        alert(
-        "FETCH ERROR:\n"+err.message
-        );
-
+    
+status.style.color="#dc3545";
+status.innerHTML="❌ Unable to connect to server.";
+console.error(err);
     }
 
 }
 async function verifyOTP(){
 
-    const email=document.getElementById("email").value.trim();
-    const otp=document.getElementById("otp").value.trim();
+    const verifyBtn=document.getElementById("verifyBtn");
+    const status=document.getElementById("loginStatus");
 
-    const res=await fetch(
-        API_URL+
-        "?action=verifyOTP"+
-        "&email="+encodeURIComponent(email)+
-        "&otp="+encodeURIComponent(otp)
-    );
+    try{
 
-    const text = await res.text();
+        verifyBtn.disabled=true;
+        verifyBtn.textContent="VERIFYING...";
 
-console.log("VERIFY RESPONSE:",text);
+        status.style.color="#1976d2";
+        status.innerHTML="⏳ Verifying OTP...";
+
+        const email=document.getElementById("email").value.trim();
+        const otp=document.getElementById("otp").value.trim();
+
+        const res=await fetch(
+            API_URL+
+            "?action=verifyOTP"+
+            "&email="+encodeURIComponent(email)+
+            "&otp="+encodeURIComponent(otp)
+        );
+
+      const text = await res.text();
+console.log(text);
 
 const data = JSON.parse(text);
 
-console.log(data);
+        verifyBtn.disabled=false;
+        verifyBtn.textContent="VERIFY OTP";
 
+        if(data.status==="OK"){
 
-    if(data.status==="OK"){
+            status.style.color="#28a745";
+            status.innerHTML="✅ Login successful.";
 
-        localStorage.setItem(
-            "inventorySession_"+BRANCH,
-            JSON.stringify({
-                email:email,
-                sessionId:data.sessionId
-            })
-        );
+            localStorage.setItem(
+                SESSION_KEY,
+                JSON.stringify({
+                    email:email,
+                    sessionId:data.sessionId
+                })
+            );
 
-      localStorage.setItem(
-    SESSION_KEY,
-    JSON.stringify({
-        email: email,
-        sessionId: data.sessionId
-    })
-);
+            localStorage.setItem("loginTime",Date.now());
 
-localStorage.setItem(
-    "loginTime",
-    Date.now()
-);
+            document.getElementById("loginScreen").style.display="none";
+            document.getElementById("app").style.display="block";
 
-        document.getElementById("loginScreen").style.display="none";
-        document.getElementById("app").style.display="block";
+            loadDashboard();
 
-        loadDashboard();
+        }else{
 
-    }else{
+            status.style.color="#dc3545";
+            status.innerHTML="❌ Invalid or expired OTP.";
 
-        document.getElementById("loginStatus").innerHTML=
-        "❌ Invalid OTP";
+        }
+
+    }catch(err){
+
+        verifyBtn.disabled=false;
+        verifyBtn.textContent="VERIFY OTP";
+
+        status.style.color="#dc3545";
+        status.innerHTML="❌ Unable to connect to server.";
+
+        console.error(err);
 
     }
 
@@ -494,12 +525,15 @@ function checkLoginExpiry(){
 
     if(Date.now()-loginTime>thirteenHours){
 
-        localStorage.removeItem("inventorySession_"+BRANCH);
+        localStorage.removeItem(SESSION_KEY);
         localStorage.removeItem("loginTime");
 
-        alert("Session expired.");
+       document.getElementById("loginStatus").style.color="#dc3545";
+document.getElementById("loginStatus").innerHTML="❌ Session expired.";
 
-        location.reload();
+location.reload();
+
+     
 
     }
 
@@ -548,7 +582,7 @@ const data = JSON.parse(text);
 
         }else{
 
-            localStorage.removeItem("inventorySession_"+BRANCH);
+            localStorage.removeItem(SESSION_KEY);
             localStorage.removeItem("loginTime");
 
             document.getElementById("loginScreen").style.display="flex";
@@ -618,7 +652,7 @@ getSessionParams()
 
         if(data.status !== "OK"){
 
-            alert(data.message || "Server error");
+            console.error(data.message || "Server error");
 
             return;
         }
@@ -651,12 +685,14 @@ data.total;
 }
 
 
-        document.getElementById("soldCount").textContent =
-        sheet==="SCANRESULTS" ? data.total : 0;
+       document.getElementById("stockCount").textContent =
+    sheet==="stocks" ? data.total : 0;
 
+document.getElementById("soldCount").textContent =
+    sheet==="SCANRESULTS" ? data.total : 0;
 
-        document.getElementById("auditCount").textContent =
-        sheet==="AUDIT" ? data.total : 0;
+document.getElementById("auditCount").textContent =
+    sheet==="AUDIT" ? data.total : 0;
 
 
         document.getElementById("showingCount").textContent =
@@ -667,12 +703,13 @@ data.total;
 
         console.error("DASHBOARD ERROR:",err);
 
-        alert(
-            "Dashboard Error:\n"+
-            err.message
-        );
-
-    }finally{
+      console.error(err);
+     
+    }
+    
+    
+    
+    finally{
 
         document.getElementById("loading").style.display="none";
 
@@ -682,48 +719,28 @@ data.total;
 
 function renderTable(rows){
 
+    const body=document.getElementById("tableBody");
 
-    const body =
-    document.getElementById("tableBody");
-
-
-    body.innerHTML="";
-
-
-    document.getElementById("showingCount").innerHTML =
-    rows.length;
-
-
-
-    rows.forEach(r=>{
-
-
-        body.innerHTML += `
-
+    if(!rows || rows.length===0){
+        body.innerHTML=`
         <tr>
+            <td colspan="5" style="text-align:center;padding:40px">
+                No data found.
+            </td>
+        </tr>`;
+        return;
+    }
 
-        <td>${r.branch}</td>
-
-        <td>${r.description}</td>
-
-        <td>${r.tag}</td>
-
-        <td>${r.si}</td>
-
-     
-
-        <td>${r.date}</td>
-
+    body.innerHTML=rows.map(r=>`
+        <tr>
+            <td>${r.branch}</td>
+            <td>${r.description}</td>
+            <td>${r.tag}</td>
+            <td>${r.si}</td>
+            <td>${r.date}</td>
         </tr>
-
-        `;
-
-
-    });
-
-
+    `).join("");
 }
-
 
 
 
