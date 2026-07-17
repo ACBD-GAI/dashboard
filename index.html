@@ -252,8 +252,8 @@ VERIFY OTP
 <thead>
 <tr>
 <th>Branch</th>
-<th>Description</th>
  <th>Lenstype</th>
+ <th>Description</th>
 <th>Tag</th>
 <th>SI</th>
 
@@ -734,9 +734,9 @@ function renderTable(rows){
 
     body.innerHTML=rows.map(r=>`
         <tr>
-            <td>${r.branch}</td>
-            <td>${r.description}</td>
+            <td>${r.branch}</td>           
             <td>${r.lenstype}</td>
+             <td>${r.description}</td>
             <td>${r.tag}</td>
             <td>${r.si}</td>
             <td>${r.date}</td>
