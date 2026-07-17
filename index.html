@@ -252,7 +252,6 @@ VERIFY OTP
 <thead>
 <tr>
 <th>Branch</th>
-<th>Barcode</th>
 <th>Description</th>
 <th>Tag</th>
 <th>SI</th>
@@ -260,11 +259,11 @@ VERIFY OTP
 <th>Date</th>
 </tr>
 </thead>
-
+ 
 <tbody id="tableBody">
 
 <tr>
-<td colspan="7" style="text-align:center;padding:40px;">
+<td colspan="6" style="text-align:center;padding:40px;">
 No data loaded.
 </td>
 </tr>
@@ -300,7 +299,7 @@ No data loaded.
 const BRANCH="DASHBOARD";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxHjSw_D6yvp9xNCQuoeH5RWlUgU8iICXQchy9k0OpOwJmPts7hyY7UPFhudQOO6v2C1g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx7DK1nSxw4C8ibGrWfd8f9G7EtH0HldGYTM0fmk8k7y5G5VxEF_EgKz6fN_b9y4d1a3w/exec";
 
 
 
@@ -592,8 +591,6 @@ function renderTable(rows){
         <tr>
 
         <td>${r.branch}</td>
-
-        <td>${r.barcode}</td>
 
         <td>${r.description}</td>
 
