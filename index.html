@@ -299,7 +299,7 @@ No data loaded.
 const BRANCH="DASHBOARD";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyY7bsE3fBu0zRMFmSPoxVnhqmh8T8MWuTaDDGZrnyYu6HTxU4ULeHQzAte21C2mtJp6w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzWq69YWc6HU3RzOdbviAqDkDzZ_DbH32yNY4W971h7jiAsUVrHUeqjtqRNE3qRbc515Q/exec";
 
 
 
@@ -314,45 +314,75 @@ async function sendOTP(){
         return;
     }
 
-    const res=await fetch(
+
+    try{
+
+        const url =
         API_URL+
-        "?action=sendOTP&email="+encodeURIComponent(email)
-    );
+        "?action=sendOTP&email="+encodeURIComponent(email);
 
-    const text = await res.text();
-console.log(text);
 
-const data = JSON.parse(text);
+        alert("Sending OTP...");
 
-alert(
-"SERVER RESPONSE:\n" +
-text
-);
 
-    if(data.status==="OTP_SENT"){
+        const res = await fetch(url);
 
-        document.getElementById("loginStatus").innerHTML=
-        "✅ OTP sent to Gmail";
 
-        document.getElementById("otp").style.display="block";
-        document.getElementById("verifyBtn").style.display="block";
+        const text = await res.text();
 
-        document.getElementById("otp").focus();
 
-    }else if(data.status==="EMAIL_DENIED"){
+        alert("SERVER RESPONSE:\n"+text);
 
-        document.getElementById("loginStatus").innerHTML=
-        "❌ Gmail not allowed.";
 
-    }else{
+        const data = JSON.parse(text);
 
-        document.getElementById("loginStatus").innerHTML=
-        "❌ Login failed.";
+
+
+        if(data.status==="OTP_SENT"){
+
+
+            document.getElementById("loginStatus").innerHTML =
+            "✅ OTP sent to Gmail";
+
+
+            document.getElementById("otp").style.display="block";
+
+
+            document.getElementById("verifyBtn").style.display="block";
+
+
+            document.getElementById("otp").focus();
+
+
+        }
+        else if(data.status==="EMAIL_DENIED"){
+
+
+            document.getElementById("loginStatus").innerHTML =
+            "❌ Gmail not allowed";
+
+
+        }
+        else{
+
+
+            document.getElementById("loginStatus").innerHTML =
+            "❌ "+text;
+
+
+        }
+
+
+    }
+    catch(err){
+
+        alert(
+        "FETCH ERROR:\n"+err.message
+        );
 
     }
 
 }
-
 async function verifyOTP(){
 
     const email=document.getElementById("email").value.trim();
