@@ -253,6 +253,7 @@ VERIFY OTP
 <tr>
 <th>Branch</th>
 <th>Description</th>
+ <th>Lenstype</th>
 <th>Tag</th>
 <th>SI</th>
 
@@ -299,7 +300,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzltdna0QV2k3qiRe0TiSX01aNX5rpsLtM8ef1aHgW4xvqqAhKGmTD03RgM2zMut2aBTw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyq9AIj0foiRSWpv6R_K1pFs88KSK150NU4mfqOPacouCZrqwPwJ3ArlAn4gOWSp6K8Wg/exec";
 
 
 
@@ -735,6 +736,7 @@ function renderTable(rows){
         <tr>
             <td>${r.branch}</td>
             <td>${r.description}</td>
+            <td>${r.lenstype}</td>
             <td>${r.tag}</td>
             <td>${r.si}</td>
             <td>${r.date}</td>
