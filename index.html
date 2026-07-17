@@ -296,7 +296,7 @@ No data loaded.
 
 
 
-const BRANCH="DASHBOARD";
+const BRANCH="MAIN";
 
 
 const API_URL = "https://script.google.com/macros/s/AKfycbyfJ2_Gs8GUTUdhtVYS3JKaxFIOpc0JmhkMgzinAHfjG6ZRRFYxIrfiHwJQpq0EGeZ_0g/exec";
@@ -360,7 +360,11 @@ async function verifyOTP(){
         "&otp="+encodeURIComponent(otp)
     );
 
-    const data = await res.json();
+    const text = await res.text();
+
+console.log("VERIFY RESPONSE:",text);
+
+const data = JSON.parse(text);
 
 console.log(data);
 
@@ -486,7 +490,11 @@ window.addEventListener("DOMContentLoaded",async()=>{
             "&sessionId="+encodeURIComponent(session.sessionId)
         );
 
-        const data=await res.json();
+        const text = await res.text();
+
+console.log("CHECK SESSION RESPONSE:",text);
+
+const data = JSON.parse(text);
 
         if(data.status==="VALID"){
 
@@ -505,14 +513,17 @@ window.addEventListener("DOMContentLoaded",async()=>{
 
         }
 
-    }catch(e){
-
-        document.getElementById("loginScreen").style.display="none";
-        document.getElementById("app").style.display="block";
-
-        loadDashboard();
-
     }
+    catch(e){
+
+    console.error("SESSION ERROR:",e);
+
+    localStorage.removeItem("inventorySession_"+BRANCH);
+
+    document.getElementById("loginScreen").style.display="flex";
+    document.getElementById("app").style.display="none";
+
+}
 
 });
 
@@ -540,12 +551,13 @@ async function loadDashboard(){
 
     try{
 
-        const res = await fetch(
-            API_URL+
-            "?action=summary"+
-            "&branch="+encodeURIComponent(branch)+
-            "&sheet="+encodeURIComponent(sheet)
-        );
+       const res = await fetch(
+    API_URL+
+    "?action=summary"+
+    "&branch="+encodeURIComponent(branch)+
+    "&sheet="+encodeURIComponent(sheet)+
+    getSessionParams()
+);
 
         const text = await res.text();
 
