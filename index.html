@@ -761,35 +761,9 @@ loadDashboard();
 
 async function editItem(branch,row){
 
-    const sheet =
-    document.getElementById("sheetSelect").value;
-
-    const res = await fetch(
-        API_URL+
-        "?action=getRecord"+
-        "&branch="+encodeURIComponent(branch)+
-        "&sheet="+encodeURIComponent(sheet)+
-        "&row="+row+
-        getSessionParams()
-    );
-
-    const data = await res.json();
-
-    if(data.status!="OK"){
-        alert(data.message);
-        return;
-    }
-
-    document.getElementById("editBranch").value=branch;
-    document.getElementById("editRow").value=row;
-
-    document.getElementById("editTag").value=data.tag;
-    document.getElementById("editSI").value=data.si;
-
-    document.getElementById("editModal").style.display="flex";
+    alert("WORKING\nBranch: " + branch + "\nRow: " + row);
 
 }
-
 async function deleteItem(branch, row){
 
     if(!confirm("Delete this record?")) return;
