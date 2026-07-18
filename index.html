@@ -857,27 +857,35 @@ onclick="deleteItem('${r.branch}',${r.row})">
 
 // BUTTON EVENTS
 
-document.getElementById("searchBtn").onclick =
-loadDashboard;
+document.getElementById("searchBtn").onclick = loadDashboard;
 
 
-document.getElementById("refreshBtn").onclick =
-loadDashboard;
+document.getElementById("refreshBtn").onclick = loadDashboard;
 
 
-document.getElementById("branchSelect").onchange =
-loadDashboard;
+// Branch and Sheet changes DO NOT LOAD DATA
+document.getElementById("branchSelect").onchange = function(){
+
+console.log("Branch changed. Click SEARCH.");
+
+};
 
 
-document.getElementById("sheetSelect").onchange =
-loadDashboard;
+document.getElementById("sheetSelect").onchange = function(){
+
+console.log("Sheet changed. Click SEARCH.");
+
+};
 
 
- document.getElementById("searchBox")
-.addEventListener("keydown",e=>{
+// ENTER key still performs SEARCH
+document.getElementById("searchBox")
+.addEventListener("keydown",function(e){
 
 if(e.key==="Enter"){
+
 loadDashboard();
+
 }
 
 });
