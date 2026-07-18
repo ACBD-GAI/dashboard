@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxqaNc7ArgGcgTD_Qc2bbvm6NutxZSW5RUGe_KBmItyKGX5Vl55bNyeU4O6AqQZH3rLew/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzSEas_jSSXH0OvoHwyZBWsm3BhabZajBEI0KetrjSnIeImkRvOe6Tv7Y17Y22ohoijGA/exec";
 
 console.log("SCRIPT STARTED");
 window.onerror=function(msg,url,line,col,error){
@@ -938,6 +938,8 @@ async function editItem(branch,row,si){
 
 async function deleteItem(branch,row){
 
+ 
+
     console.log("deleteItem() called");
     console.log("branch =", branch);
     console.log("row =", row);
@@ -1141,12 +1143,14 @@ function closeDialog(){
 }
 
 
-document.getElementById("dialogOK").onclick = async function(){
+
+ async function dialogOKClick(){
+
+    console.log("OK BUTTON CLICKED");
 
     if(dialogCallback){
 
         const fn = dialogCallback;
-
         dialogCallback = null;
 
         await fn();
@@ -1157,9 +1161,7 @@ document.getElementById("dialogOK").onclick = async function(){
 
     }
 
-};
-
-
+}
 
 
  
@@ -1245,11 +1247,12 @@ Cancel
 </button>
 
 
-<button 
+<button
 id="dialogOK"
-class="dialogBtn dialogOK">
+class="dialogBtn dialogOK"
+onclick="dialogOKClick()">
 OK
-</button>
+</button>>
 
 </div>
 
@@ -1258,6 +1261,39 @@ OK
 </div>
  
  
+document.getElementById("dialogOK").onclick = async function(){
+
+    console.log("OK BUTTON CLICKED");
+
+    if(dialogCallback){
+
+        console.log("CALLBACK FOUND");
+
+        try{
+
+            await dialogCallback();
+
+            console.log("CALLBACK FINISHED");
+
+        }catch(err){
+
+            console.error("DELETE ERROR:", err);
+
+        }
+
+        dialogCallback = null;
+
+    }else{
+
+        console.log("NO CALLBACK");
+
+        closeDialog();
+
+    }
+
+};
+
+
 
 
 
