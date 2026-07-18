@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyz7-q5G24jnTfk7c2IfiaMolIZRdqdjX6c13TNnUV7664agtW0OL4NCITKWxA4krV_tQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxqaNc7ArgGcgTD_Qc2bbvm6NutxZSW5RUGe_KBmItyKGX5Vl55bNyeU4O6AqQZH3rLew/exec";
 
 
 
@@ -927,25 +927,32 @@ async function editItem(branch,row,si){
 
 async function deleteItem(branch,row){
 
+    const sheet = document.getElementById("sheetSelect").value;
+
     showDialog(
         "Delete Record?",
         "Are you sure you want to permanently delete this item?",
         "🗑️",
-        async ()=>{
+        async function(){
 
             try{
 
                 const res = await fetch(
+
                     API_URL+
                     "?action=deleteRecord"+
                     "&branch="+encodeURIComponent(branch)+
+                    "&sheet="+encodeURIComponent(sheet)+
                     "&row="+row+
                     getSessionParams()
+
                 );
 
                 const data = await res.json();
 
                 if(data.status=="OK"){
+
+                    closeDialog();
 
                     await loadDashboard();
 
@@ -959,9 +966,11 @@ async function deleteItem(branch,row){
 
                 }else{
 
+                    closeDialog();
+
                     showDialog(
                         "Error",
-                        data.message||"Delete failed.",
+                        data.message,
                         "❌",
                         null,
                         true
@@ -971,11 +980,11 @@ async function deleteItem(branch,row){
 
             }catch(err){
 
-                console.error(err);
+                closeDialog();
 
                 showDialog(
                     "Error",
-                    err,
+                    err.message,
                     "❌",
                     null,
                     true
@@ -984,6 +993,7 @@ async function deleteItem(branch,row){
             }
 
         }
+
     );
 
 }
@@ -1038,21 +1048,22 @@ getSessionParams()
     const data = await res.json();
 
 
-    if(data.status=="OK"){
+if(data.status=="OK"){
 
-        closeEditModal();
+    closeEditModal();
 
-        loadDashboard();
+    await loadDashboard();
 
-       showDialog(
-"Updated",
-"SI number updated successfully.",
-"✅",
-null,
-true
-);
+    showDialog(
+        "Updated",
+        "SI number updated successfully.",
+        "✅",
+        null,
+        true
+    );
 
-    }else{
+}
+else{
 
         showDialog(
 "Error",
@@ -1111,27 +1122,13 @@ dialogCallback=null;
 }
 
 
-document.getElementById("dialogOK").onclick = async function(){
+document.getElementById("dialogOK").onclick = function(){
 
-    if(dialogCallback){
-
-        const cb = dialogCallback;
-
-        dialogCallback = null;
-
-        closeDialog();
-
-        await cb();
-
-    }else{
-
-        closeDialog();
-
-    }
+    alert("OK BUTTON WORKS");
 
 };
 
-</SCRIPT>
+
 
 
  
@@ -1232,11 +1229,6 @@ OK
  
 
 
-</div>
-
-</div>
-
-</div>
 
 
  
