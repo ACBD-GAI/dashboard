@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycby74x83D3n6i85-qvvshbYPNUAl1t9pqTSrfvrOCD2a43BlSaQqykD9EDpuNgrf9gU6lA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzNCP0Ktly_Yk-9NKfjND9OcVqB0uEkIIC2KVeqahbc-80iXx6U7xyWvN23V2nUS3-IrQ/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1241,7 +1241,8 @@ document.getElementById("prevBtn").onclick=function(){
 
 async function startExport(){
 
-    const branch=document.getElementById("exportBranch").value;
+    const branch = document.getElementById("exportBranch").value;
+    const sheet  = document.getElementById("sheetSelect").value;
 
     if(!branch){
 
@@ -1259,19 +1260,69 @@ async function startExport(){
 
     closeExportModal();
 
-    window.open(
+    showLoading("Preparing Excel...");
 
-        API_URL+
-        "?action=export"+
-        "&branch="+encodeURIComponent(branch)+
-        getSessionParams(),
+    try{
 
-        "_blank"
+        const res = await fetch(
 
-    );
+            API_URL+
+            "?action=export"+
+            "&branch="+encodeURIComponent(branch)+
+            "&sheet="+encodeURIComponent(sheet)+
+            getSessionParams()
+
+        );
+
+        const base64 = await res.text();
+
+        hideLoading();
+
+        const bytes = Uint8Array.from(
+            atob(base64),
+            c => c.charCodeAt(0)
+        );
+
+        const blob = new Blob(
+            [bytes],
+            {
+                type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        );
+
+        const a=document.createElement("a");
+
+        a.href=URL.createObjectURL(blob);
+
+        a.download=branch+"_"+sheet+".xlsx";
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+        URL.revokeObjectURL(a.href);
+
+        showDialog(
+            "Success",
+            "Export completed.",
+            "✅"
+        );
+
+    }catch(err){
+
+        hideLoading();
+
+        showDialog(
+            "Export Failed",
+            err.message,
+            "❌"
+        );
+
+    }
 
 }
-
 
  
 
