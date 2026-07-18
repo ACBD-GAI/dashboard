@@ -10,6 +10,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>INV DASHBOARD</title>
+<link rel="stylesheet" href="style.css">
 
 <style>
 
@@ -701,7 +702,7 @@ const data = JSON.parse(text);
 
 });
 
-window.addEventListener("DOMContentLoaded",()=>{const b=document.getElementById("logoutBtn"); if(b) b.onclick=logout;});
+document.getElementById("logoutBtn").onclick=logout;
 
 document.getElementById("email").addEventListener("keydown",e=>{
     if(e.key==="Enter")sendOTP();
@@ -853,8 +854,7 @@ onclick="deleteItem('${r.branch}',${r.row})">
 
 </tr>
 
-``;
-}).join("");
+`).join("");
 
 }
 
