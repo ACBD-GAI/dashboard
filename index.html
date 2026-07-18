@@ -898,50 +898,104 @@ async function editItem(branch,row,si){
         );
 
         return;
-    }
-
-
-    try{
-
-        document.getElementById("editBranch").value = branch;
-        document.getElementById("editRow").value = row;
-        document.getElementById("editSI").value = si || "";
-
-        document.getElementById("editModal").style.display="flex";
-
-
-    }catch(err){
-
-        console.error(err);
-
-        showDialog(
-            "Error",
-            "Unable to open edit window.",
-            "❌"
-        );
 
     }
 
-}
-            return;
-        }
 
-        document.getElementById("editBranch").value=branch;
-    document.getElementById("editRow").value=row;
+    document.getElementById("editBranch").value = branch;
 
-    document.getElementById("editSI").value=si || "";
+    document.getElementById("editRow").value = row;
+
+    document.getElementById("editSI").value = si || "";
+
 
     document.getElementById("editModal").style.display="flex";
 
-    }catch(err){
-
-        console.error(err);
-        alert("Unable to load record.");
-
-    }
 
 }
+
+
+
 function deleteItem(branch,row){
+
+    showDialog(
+        "Delete Record?",
+        "Are you sure you want to permanently delete this item?",
+        "🗑️",
+        async function(){
+
+
+            const sheet =
+            document.getElementById("sheetSelect").value;
+
+
+
+            try{
+
+
+                const res = await fetch(
+                    API_URL +
+                    "?action=deleteRecord" +
+                    "&branch=" + encodeURIComponent(branch) +
+                    "&sheet=" + encodeURIComponent(sheet) +
+                    "&row=" + row +
+                    getSessionParams()
+                );
+
+
+                const data = await res.json();
+
+
+
+                if(data.status=="OK"){
+
+
+                    showDialog(
+                        "Deleted",
+                        "Record deleted successfully.",
+                        "✅"
+                    );
+
+
+                    loadDashboard();
+
+
+
+                }else{
+
+
+                    showDialog(
+                        "Error",
+                        data.message || "Delete failed.",
+                        "❌"
+                    );
+
+
+                }
+
+
+
+            }catch(err){
+
+
+                console.error(err);
+
+
+                showDialog(
+                    "Error",
+                    "Unable to delete record.",
+                    "❌"
+                );
+
+
+            }
+
+
+        }
+    );
+
+}
+ function deleteItem(branch,row){
 
     showDialog(
         "Delete Record?",
