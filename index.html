@@ -398,9 +398,14 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwQDpJ7ig8wR5dp5kHB-QanMAqZrH6gL7VcR-IS-_uRjcExSBihVwLUC1ZLcuJtCxNbbA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzbimtYLRGl8dawX7_kIMOGi-ADVlA9c5dnv2Cqau5b3pMQQ3qKaEl9iK-tG7P7rlaWRA/exec";
+let allRows = [];
+let currentPage = 1;
+const rowsPerPage = 20;
 
-console.log("SCRIPT STARTED");
+ 
+ 
+ console.log("SCRIPT STARTED");
 window.onerror=function(msg,url,line,col,error){
     console.log("JS ERROR:",msg,"LINE:",line);
 };
@@ -780,7 +785,9 @@ getSessionParams()
         }
 
 
-        renderTable(data.data);
+     allRows = data.data;
+currentPage = 1;
+renderTable();
 
 
       document.getElementById("stockCount").textContent =
@@ -793,8 +800,8 @@ document.getElementById("auditCount").textContent =
     data.auditTotal;
 
 
-        document.getElementById("showingCount").textContent =
-        data.data.length;
+      document.getElementById("showingCount").textContent =
+allRows.length;
 
 
     }catch(err){
@@ -815,32 +822,43 @@ document.getElementById("auditCount").textContent =
 
 }
 
-function renderTable(rows){
+function renderTable(){
 
-    const body=document.getElementById("tableBody");
+    const body = document.getElementById("tableBody");
 
     const sheet =
     document.getElementById("sheetSelect").value;
 
-
-    if(!rows || rows.length===0){
+    if(allRows.length===0){
 
         body.innerHTML=`
         <tr>
-            <td colspan="7" style="text-align:center;padding:40px">
-                No data found.
-            </td>
+        <td colspan="7" style="text-align:center;padding:40px">
+        No data found.
+        </td>
         </tr>`;
 
+        document.getElementById("pageInfo").textContent="Page 0 / 0";
         return;
+
     }
 
+    const totalPages =
+    Math.ceil(allRows.length / rowsPerPage);
 
-    body.innerHTML = rows.map((r,index) => {
+    if(currentPage<1) currentPage=1;
+    if(currentPage>totalPages) currentPage=totalPages;
 
-    console.log("ROW", index, r);
+    const start =
+    (currentPage-1)*rowsPerPage;
 
-    return `
+    const end =
+    start+rowsPerPage;
+
+    const rows =
+    allRows.slice(start,end);
+
+    body.innerHTML = rows.map((r)=>`
 
 <tr>
 
@@ -852,7 +870,6 @@ function renderTable(rows){
 <td>${r.date}</td>
 
 <td>
-
 
 ${sheet=="SCANRESULTS"
 ?
@@ -868,22 +885,19 @@ onclick="deleteItem('${r.branch}',${r.row})">
 </button>
 `
 :
-`
--
-`
+"-"
 }
-
 
 </td>
 
 </tr>
 
-`;
+`).join("");
 
-    }).join("");
+    document.getElementById("pageInfo").textContent =
+    "Page " + currentPage + " / " + totalPages;
 
 }
-
 
 // BUTTON EVENTS
 
@@ -1181,6 +1195,34 @@ function closeDialog(){
     }
 
 }
+
+
+ document.getElementById("nextBtn").onclick=function(){
+
+    const totalPages =
+    Math.ceil(allRows.length/rowsPerPage);
+
+    if(currentPage<totalPages){
+
+        currentPage++;
+
+        renderTable();
+
+    }
+
+};
+
+document.getElementById("prevBtn").onclick=function(){
+
+    if(currentPage>1){
+
+        currentPage--;
+
+        renderTable();
+
+    }
+
+};
 
 
  
