@@ -300,7 +300,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwuDMDli0LBs_E_d4cbn-kp2BWf_d6jONbVoSSJYbJ-jl7bbcu6pEyunqDasKKYpwhHSA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwFi68pCyG1JfR5PxK4tU7OfNM8Tkc8-tcQ6l3AwA-ReyVpBT7tOjh0rYOh7rUTwsOsdQ/exec";
 
 
 
@@ -759,12 +759,34 @@ loadDashboard();
 });
 
 
-function editItem(branch, row){
+async function editItem(branch,row){
 
-    alert(
-        "Branch: " + branch +
-        "\nSpreadsheet Row: " + row
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+    const res = await fetch(
+        API_URL+
+        "?action=getRecord"+
+        "&branch="+encodeURIComponent(branch)+
+        "&sheet="+encodeURIComponent(sheet)+
+        "&row="+row+
+        getSessionParams()
     );
+
+    const data = await res.json();
+
+    if(data.status!="OK"){
+        alert(data.message);
+        return;
+    }
+
+    document.getElementById("editBranch").value=branch;
+    document.getElementById("editRow").value=row;
+
+    document.getElementById("editTag").value=data.tag;
+    document.getElementById("editSI").value=data.si;
+
+    document.getElementById("editModal").style.display="flex";
 
 }
 
@@ -800,7 +822,59 @@ const res = await fetch(
 
 }
 
+function closeEditModal(){
 
+    document.getElementById("editModal").style.display="none";
+
+}
+
+async function saveEdit(){
+
+    const branch =
+    document.getElementById("editBranch").value;
+
+    const row =
+    document.getElementById("editRow").value;
+
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+    const tag =
+    document.getElementById("editTag").value.trim();
+
+    const si =
+    document.getElementById("editSI").value.trim();
+
+    const res = await fetch(
+
+        API_URL+
+        "?action=updateRecord"+
+        "&branch="+encodeURIComponent(branch)+
+        "&sheet="+encodeURIComponent(sheet)+
+        "&row="+row+
+        "&tag="+encodeURIComponent(tag)+
+        "&si="+encodeURIComponent(si)+
+        getSessionParams()
+
+    );
+
+    const data = await res.json();
+
+    if(data.status=="OK"){
+
+        closeEditModal();
+
+        loadDashboard();
+
+        alert("Record updated.");
+
+    }else{
+
+        alert(data.message);
+
+    }
+
+}
  
 
   
