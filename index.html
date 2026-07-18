@@ -759,8 +759,8 @@ getSessionParams()
         renderTable(data.data);
 
 
-       document.getElementById("stockCount").textContent =
-    data.availableTotal;
+      document.getElementById("stockCount").textContent =
+    Math.max(0,data.availableTotal);
 
 document.getElementById("soldCount").textContent =
     data.soldTotal;
@@ -883,7 +883,7 @@ loadDashboard();
 });
 
 
-async function editItem(branch,row){
+async function editItem(branch,row,si){
 
     const sheet =
     document.getElementById("sheetSelect").value;
@@ -892,34 +892,37 @@ async function editItem(branch,row){
     if(sheet !== "SCANRESULTS"){
 
         showDialog(
-"Not Allowed",
-"Edit is only available for SOLD OUT records.",
-"⚠️"
-);
+            "Not Allowed",
+            "Edit is only available for SOLD OUT records.",
+            "⚠️"
+        );
 
         return;
-
     }
+
 
     try{
 
-        const res = await fetch(
-            API_URL +
-            "?action=getRecord" +
-            "&branch=" + encodeURIComponent(branch) +
-            "&sheet=" + encodeURIComponent(sheet) +
-            "&row=" + row +
-            getSessionParams()
+        document.getElementById("editBranch").value = branch;
+        document.getElementById("editRow").value = row;
+        document.getElementById("editSI").value = si || "";
+
+        document.getElementById("editModal").style.display="flex";
+
+
+    }catch(err){
+
+        console.error(err);
+
+        showDialog(
+            "Error",
+            "Unable to open edit window.",
+            "❌"
         );
 
-        const data = await res.json();
+    }
 
-        if(data.status != "OK"){
-            showDialog(
-"Error",
-data.message,
-"❌"
-);
+}
             return;
         }
 
@@ -950,14 +953,14 @@ function deleteItem(branch,row){
             document.getElementById("sheetSelect").value;
 
 
-           const res = await fetch(
+     const res = await fetch(
     API_URL +
     "?action=deleteRecord" +
     "&branch=" + encodeURIComponent(branch) +
+    "&sheet=" + encodeURIComponent(sheet) +
     "&row=" + row +
     getSessionParams()
 );
-
 
             const text = await res.text();
 
@@ -1028,11 +1031,12 @@ async function saveEdit(){
     const res = await fetch(
 
         API_URL+
-        "?action=updateSI"+
-        "&branch="+encodeURIComponent(branch)+
-        "&row="+row+
-        "&si="+encodeURIComponent(si)+
-        getSessionParams()
+    "?action=updateSI"+
+"&branch="+encodeURIComponent(branch)+
+"&sheet="+encodeURIComponent(sheet)+
+"&row="+row+
+"&si="+encodeURIComponent(si)+
+getSessionParams()
 
     );
 
@@ -1158,6 +1162,12 @@ Cancel
 <button onclick="saveEdit()">
 Save
 </button>
+
+</div>
+
+</div>
+
+</div>
 
 
 <div id="dialog" class="customDialog">
