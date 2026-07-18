@@ -477,16 +477,15 @@ status.style.color = "#dc3545";
 status.innerHTML = "❌ This Gmail is not authorized.";
 
         }
-        else{
+       else{
 
-
-         
+console.log("OTP ERROR:",data);
 
 status.style.color = "#dc3545";
-status.innerHTML = "❌ " + (data.message || "Unable to send OTP.");
+status.innerHTML =
+"❌ " + JSON.stringify(data);
 
-
-        }
+}
 
 
     }
