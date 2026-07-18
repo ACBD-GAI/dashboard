@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyKUN7Ub8vZRijKm9YolA_wcVjdK37TNaU1REOZQEmAaLKdwuVfdVR4EiU53Dcb8js3Ng/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbz1Ke9LelZQxVAllBiuvuAftmECTJPQinJYIV-pAs1WDVIRgGP7BZ8pRaxPZnnj-yZhqw/exec";
 
 console.log("SCRIPT STARTED");
 window.onerror=function(msg,url,line,col,error){
@@ -552,7 +552,7 @@ const data = JSON.parse(text);
             document.getElementById("loginScreen").style.display="none";
             document.getElementById("app").style.display="block";
 
-            loadDashboard();
+            resetDashboard();
 
         }else{
 
@@ -681,7 +681,7 @@ const data = JSON.parse(text);
             document.getElementById("loginScreen").style.display="none";
             document.getElementById("app").style.display="block";
 
-            loadDashboard();
+            resetDashboard();
 
         }else{
 
@@ -718,6 +718,24 @@ document.getElementById("otp").addEventListener("keydown",e=>{
 });
 
 /* ================= DASHBOARD ================= */
+
+function resetDashboard(){
+
+    document.getElementById("stockCount").textContent = "0";
+    document.getElementById("soldCount").textContent = "0";
+    document.getElementById("auditCount").textContent = "0";
+    document.getElementById("showingCount").textContent = "0";
+
+    document.getElementById("tableBody").innerHTML = `
+    <tr>
+        <td colspan="7" style="text-align:center;padding:40px;">
+            Click SEARCH to load data.
+        </td>
+    </tr>`;
+
+}
+
+ 
 
 async function loadDashboard(){
 
