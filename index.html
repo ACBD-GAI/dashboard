@@ -924,131 +924,61 @@ async function editItem(branch,row,si){
 
 
 
-function deleteItem(branch,row){
+
+async function deleteItem(branch,row){
 
     showDialog(
         "Delete Record?",
         "Are you sure you want to permanently delete this item?",
         "🗑️",
-        async function(){
-
-
-            const sheet =
-            document.getElementById("sheetSelect").value;
-
-
+        async ()=>{
 
             try{
 
-
                 const res = await fetch(
-                    API_URL +
-                    "?action=deleteRecord" +
-                    "&branch=" + encodeURIComponent(branch) +
-                    "&sheet=" + encodeURIComponent(sheet) +
-                    "&row=" + row +
+                    API_URL+
+                    "?action=deleteRecord"+
+                    "&branch="+encodeURIComponent(branch)+
+                    "&row="+row+
                     getSessionParams()
                 );
 
-
                 const data = await res.json();
-
-
 
                 if(data.status=="OK"){
 
+                    await loadDashboard();
 
                     showDialog(
                         "Deleted",
                         "Record deleted successfully.",
-                        "✅"
+                        "✅",
+                        null,
+                        true
                     );
-
-
-                    loadDashboard();
-
-
 
                 }else{
 
-
                     showDialog(
                         "Error",
-                        data.message || "Delete failed.",
-                        "❌"
+                        data.message||"Delete failed.",
+                        "❌",
+                        null,
+                        true
                     );
-
 
                 }
 
-
-
             }catch(err){
-
 
                 console.error(err);
 
-
                 showDialog(
                     "Error",
-                    "Unable to delete record.",
-                    "❌"
-                );
-
-
-            }
-
-
-        }
-    );
-
-}
- function deleteItem(branch,row){
-
-    showDialog(
-        "Delete Record?",
-        "Are you sure you want to permanently delete this item?",
-        "🗑️",
-        async function(){
-
-            const sheet =
-            document.getElementById("sheetSelect").value;
-
-
-     const res = await fetch(
-    API_URL +
-    "?action=deleteRecord" +
-    "&branch=" + encodeURIComponent(branch) +
-    "&sheet=" + encodeURIComponent(sheet) +
-    "&row=" + row +
-    getSessionParams()
-);
-
-            const text = await res.text();
-
-console.log("GET RECORD RESPONSE:",text);
-
-const data = JSON.parse(text);
-
-
-            if(data.status=="OK"){
-
-                showDialog(
-"Deleted",
-"Record deleted successfully.",
-"✅",
-null,
-true
-);
-
-                loadDashboard();
-
-            }else{
-
-                showDialog(
-                    "Error",
-                    data.message,
-                    "❌"
+                    err,
+                    "❌",
+                    null,
+                    true
                 );
 
             }
@@ -1181,19 +1111,23 @@ dialogCallback=null;
 }
 
 
-document.getElementById("dialogOK").onclick=function(){
+document.getElementById("dialogOK").onclick = async function(){
 
-if(dialogCallback){
+    if(dialogCallback){
 
-let callback = dialogCallback;
+        const cb = dialogCallback;
 
-dialogCallback=null;
+        dialogCallback = null;
 
-callback();
+        closeDialog();
 
-}
+        await cb();
 
-closeDialog();
+    }else{
+
+        closeDialog();
+
+    }
 
 };
 
