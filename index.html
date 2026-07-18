@@ -938,15 +938,19 @@ async function editItem(branch,row,si){
 
 async function deleteItem(branch,row){
 
+    console.log("deleteItem() called");
+    console.log("branch =", branch);
+    console.log("row =", row);
+
     const sheet = document.getElementById("sheetSelect").value;
 
     showDialog(
         "Delete Record?",
         "Are you sure you want to permanently delete this item?",
         "🗑️",
-       async function(){
+        async function(){
 
-    console.log("DELETE CALLBACK STARTED");
+            console.log("DELETE CALLBACK STARTED");
 
     try{
 
