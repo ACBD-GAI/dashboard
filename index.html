@@ -933,11 +933,15 @@ async function deleteItem(branch,row){
         "Delete Record?",
         "Are you sure you want to permanently delete this item?",
         "🗑️",
-        async function(){
+       async function(){
 
-            try{
+    console.log("DELETE CALLBACK STARTED");
 
-                const res = await fetch(
+    try{
+
+        console.log("SENDING REQUEST");
+
+        const res = await fetch(
 
                     API_URL+
                     "?action=deleteRecord"+
@@ -949,6 +953,8 @@ async function deleteItem(branch,row){
                 );
 
                 const data = await res.json();
+
+     console.log("SERVER RETURNED:", data);
 
                 if(data.status=="OK"){
 
@@ -1115,16 +1121,26 @@ document.getElementById("dialog").style.display="flex";
 
 function closeDialog(){
 
-document.getElementById("dialog").style.display="none";
-
-dialogCallback=null;
+    document.getElementById("dialog").style.display="none";
 
 }
 
 
-document.getElementById("dialogOK").onclick = function(){
+document.getElementById("dialogOK").onclick = async function(){
 
-    alert("OK BUTTON WORKS");
+    if(dialogCallback){
+
+        const fn = dialogCallback;
+
+        dialogCallback = null;
+
+        await fn();
+
+    }else{
+
+        closeDialog();
+
+    }
 
 };
 
