@@ -812,7 +812,11 @@ function renderTable(rows){
     }
 
 
-    body.innerHTML = rows.map(r => `
+    body.innerHTML = rows.map((r,index) => {
+
+    console.log("ROW", index, r);
+
+    return `
 
 <tr>
 
