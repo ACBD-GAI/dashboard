@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycby4GwS69B-jbsIKJNriP0Svw53nor96tyPZZmuX6PupMrAGJCCmSfJYYSfol5nH0oo9WQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyz7-q5G24jnTfk7c2IfiaMolIZRdqdjX6c13TNnUV7664agtW0OL4NCITKWxA4krV_tQ/exec";
 
 
 
@@ -1034,10 +1034,12 @@ const data = JSON.parse(text);
             if(data.status=="OK"){
 
                 showDialog(
-                    "Deleted",
-                    "Record deleted successfully.",
-                    "✅"
-                );
+"Deleted",
+"Record deleted successfully.",
+"✅",
+null,
+true
+);
 
                 loadDashboard();
 
@@ -1112,10 +1114,12 @@ getSessionParams()
 
         loadDashboard();
 
-        showDialog(
+       showDialog(
 "Updated",
 "SI number updated successfully.",
-"✅"
+"✅",
+null,
+true
 );
 
     }else{
@@ -1140,18 +1144,33 @@ data.message,
 let dialogCallback=null;
 
 
-function showDialog(title,message,icon="⚠️",callback=null){
+function showDialog(title,message,icon="⚠️",callback=null,onlyOK=false){
 
 document.getElementById("dialogTitle").innerHTML=title;
+
 document.getElementById("dialogMessage").innerHTML=message;
+
 document.getElementById("dialogIcon").innerHTML=icon;
 
+
 dialogCallback=callback;
+
+
+// hide cancel button if message only
+if(onlyOK){
+
+document.querySelector(".dialogCancel").style.display="none";
+
+}else{
+
+document.querySelector(".dialogCancel").style.display="block";
+
+}
+
 
 document.getElementById("dialog").style.display="flex";
 
 }
-
 
 function closeDialog(){
 
@@ -1165,7 +1184,13 @@ dialogCallback=null;
 document.getElementById("dialogOK").onclick=function(){
 
 if(dialogCallback){
-dialogCallback();
+
+let callback = dialogCallback;
+
+dialogCallback=null;
+
+callback();
+
 }
 
 closeDialog();
