@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzL8KdrElpvv5NJ-c9c0-QnRogMcsJ7lR2Gx_mJEKrCSylHA_jRv39QzqzBTKDw2QvD/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyO6NSuvRRx-Ks42NP8zxixBM9ANOpJ97-LpzFcf9xC1l7mvw5h41V9r5woVbBIJwnhsw/exec";
 
 
 
@@ -951,14 +951,13 @@ function deleteItem(branch,row){
             document.getElementById("sheetSelect").value;
 
 
-            const res = await fetch(
-                API_URL +
-                "?action=deleteRecord" +
-                "&branch=" + encodeURIComponent(branch) +
-                "&sheet=" + encodeURIComponent(sheet) +
-                "&row=" + row +
-                getSessionParams()
-            );
+           const res = await fetch(
+    API_URL +
+    "?action=deleteRecord" +
+    "&branch=" + encodeURIComponent(branch) +
+    "&row=" + row +
+    getSessionParams()
+);
 
 
             const text = await res.text();
