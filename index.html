@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxAHU7TlWN6D0hMjHPsLInh5UcgV_BXRrYb7tKCnObX6oNnRQWfTMq1BsFROzmfIoiFfw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby4GwS69B-jbsIKJNriP0Svw53nor96tyPZZmuX6PupMrAGJCCmSfJYYSfol5nH0oo9WQ/exec";
 
 
 
@@ -830,7 +830,7 @@ ${sheet=="SCANRESULTS"
 ?
 `
 <button class="editBtn"
-onclick="editItem('${r.branch}',${r.row})">
+onclick="editItem('${r.branch}',${r.row},'${r.si}')">
 ✏ Edit SI
 </button>
 
@@ -923,12 +923,12 @@ data.message,
             return;
         }
 
-        document.getElementById("editBranch").value = branch;
-        document.getElementById("editRow").value = row;
+        document.getElementById("editBranch").value=branch;
+    document.getElementById("editRow").value=row;
 
-        document.getElementById("editSI").value = data.si || "";
+    document.getElementById("editSI").value=si || "";
 
-        document.getElementById("editModal").style.display = "flex";
+    document.getElementById("editModal").style.display="flex";
 
     }catch(err){
 
@@ -1109,6 +1109,12 @@ closeDialog();
 </SCRIPT>
 
 
+ 
+
+
+ 
+</SCRIPT>  
+
 <div id="editModal"
 style="
 display:none;
@@ -1200,11 +1206,8 @@ OK
 </div>
 
 </div>
- 
 
 
  
-</SCRIPT>  
-
 </body>
 </html>
