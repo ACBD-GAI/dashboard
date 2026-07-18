@@ -300,7 +300,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwFi68pCyG1JfR5PxK4tU7OfNM8Tkc8-tcQ6l3AwA-ReyVpBT7tOjh0rYOh7rUTwsOsdQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwxeIrIDBt4jr-Usf0H4xlVZEdcwf7hqWGAI7EMpMwSv-eTjHolurfc3Hl_22M3zc2xUA/exec";
 
 
 
@@ -717,14 +717,17 @@ function renderTable(rows){
     <td>${r.si}</td>
     <td>${r.date}</td>
 
-    <td>
-        <button onclick="editItem('${r.branch}',${r.row})">✏ Edit
-</button>
+ <td>
+
+${document.getElementById("sheetSelect").value=="SCANRESULTS"
+? `<button onclick="editItem('${r.branch}',${r.row})">✏ Edit SI</button>`
+: ""}
 
 <button onclick="deleteItem('${r.branch}',${r.row})">
 🗑 Delete
 </button>
-    </td>
+
+</td>
 </tr>
 `).join("");
 }
@@ -761,7 +764,17 @@ loadDashboard();
 
 async function editItem(branch,row){
 
-    const sheet = document.getElementById("sheetSelect").value;
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+
+    if(sheet !== "SCANRESULTS"){
+
+        alert("Edit is only allowed for SOLD OUT.");
+
+        return;
+
+    }
 
     try{
 
@@ -784,7 +797,6 @@ async function editItem(branch,row){
         document.getElementById("editBranch").value = branch;
         document.getElementById("editRow").value = row;
 
-        document.getElementById("editTag").value = data.tag || "";
         document.getElementById("editSI").value = data.si || "";
 
         document.getElementById("editModal").style.display = "flex";
@@ -846,26 +858,34 @@ async function saveEdit(){
     const sheet =
     document.getElementById("sheetSelect").value;
 
-    const tag =
-    document.getElementById("editTag").value.trim();
+
+    // ONLY ALLOW SOLD OUT EDITING
+    if(sheet !== "SCANRESULTS"){
+
+        alert("SI editing is only available for SOLD OUT records.");
+
+        return;
+    }
+
 
     const si =
     document.getElementById("editSI").value.trim();
 
+
     const res = await fetch(
 
         API_URL+
-        "?action=updateRecord"+
+        "?action=updateSI"+
         "&branch="+encodeURIComponent(branch)+
-        "&sheet="+encodeURIComponent(sheet)+
         "&row="+row+
-        "&tag="+encodeURIComponent(tag)+
         "&si="+encodeURIComponent(si)+
         getSessionParams()
 
     );
 
+
     const data = await res.json();
+
 
     if(data.status=="OK"){
 
@@ -873,7 +893,7 @@ async function saveEdit(){
 
         loadDashboard();
 
-        alert("Record updated.");
+        alert("SI updated.");
 
     }else{
 
@@ -882,6 +902,30 @@ async function saveEdit(){
     }
 
 }
+
+
+ function updateSI(e){
+
+const branch = e.parameter.branch;
+const row = Number(e.parameter.row);
+const si = e.parameter.si;
+
+
+const ss = getSpreadsheet(branch);
+
+const sheet =
+ss.getSheetByName("SCANRESULTS");
+
+
+sheet.getRange(row,5).setValue(si);
+
+
+return {
+status:"OK"
+};
+
+}
+
  
 
   
@@ -917,11 +961,7 @@ width:350px;
 <input type="hidden" id="editBranch">
 <input type="hidden" id="editRow">
 
-<label>Tag</label>
 
-<input
-id="editTag"
-style="width:100%;padding:10px;margin-bottom:15px;">
 
 <label>SI Number</label>
 
