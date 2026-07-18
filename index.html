@@ -901,10 +901,19 @@ onclick="deleteItem('${r.branch}',${r.row})">
 
 // BUTTON EVENTS
 
+// BUTTON EVENTS
+
 document.getElementById("searchBtn").onclick = loadDashboard;
 
-
 document.getElementById("refreshBtn").onclick = loadDashboard;
+
+document.getElementById("exportBtn").onclick=function(){
+
+    document.getElementById("exportBranch").value="";
+
+    document.getElementById("exportModal").style.display="flex";
+
+};
 
 
 // Branch and Sheet changes DO NOT LOAD DATA
@@ -1224,6 +1233,45 @@ document.getElementById("prevBtn").onclick=function(){
 
 };
 
+ function closeExportModal(){
+
+    document.getElementById("exportModal").style.display="none";
+
+}
+
+async function startExport(){
+
+    const branch=document.getElementById("exportBranch").value;
+
+    if(!branch){
+
+        showDialog(
+            "Branch Required",
+            "Please select a branch.",
+            "⚠️",
+            null,
+            true
+        );
+
+        return;
+
+    }
+
+    closeExportModal();
+
+    window.open(
+
+        API_URL+
+        "?action=export"+
+        "&branch="+encodeURIComponent(branch)+
+        getSessionParams(),
+
+        "_blank"
+
+    );
+
+}
+
 
  
 
@@ -1328,6 +1376,61 @@ OK
 
 
 
- 
+<div id="exportModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.4);
+justify-content:center;
+align-items:center;
+z-index:999999;
+">
+
+<div style="
+background:#fff;
+padding:25px;
+border-radius:15px;
+width:350px;
+">
+
+<h3>Select Branch to Export</h3>
+
+<select id="exportBranch"
+style="
+width:100%;
+padding:12px;
+margin:20px 0;
+">
+
+<option value="">-- Select Branch --</option>
+<option value="GAI">🏢 Gaisano Iloilo</option>
+<option value="CAS">🏢 Casa Plaza</option>
+<option value="BAC">🏢 Bacolod</option>
+
+</select>
+
+<div style="
+display:flex;
+justify-content:flex-end;
+gap:10px;
+">
+
+<button onclick="closeExportModal()">
+Cancel
+</button>
+
+<button onclick="startExport()">
+Export
+</button>
+
+</div>
+
+</div>
+
+</div> 
 </body>
 </html>
