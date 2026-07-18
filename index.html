@@ -400,6 +400,11 @@ const SESSION_KEY = "inventorySession";
 
 const API_URL = "https://script.google.com/macros/s/AKfycbxqaNc7ArgGcgTD_Qc2bbvm6NutxZSW5RUGe_KBmItyKGX5Vl55bNyeU4O6AqQZH3rLew/exec";
 
+console.log("SCRIPT STARTED");
+window.onerror=function(msg,url,line,col,error){
+    console.log("JS ERROR:",msg,"LINE:",line);
+};
+ 
 
 
 /* ================= LOGIN ================= */
