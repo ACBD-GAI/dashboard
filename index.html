@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzNCP0Ktly_Yk-9NKfjND9OcVqB0uEkIIC2KVeqahbc-80iXx6U7xyWvN23V2nUS3-IrQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyF77FXT50rLgNWkTnOZkhD-I2QvZGm30i_ZCZkkYC1C1ItF_3AjLYS-ToGZmXPdfkV1A/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1260,7 +1260,7 @@ async function startExport(){
 
     closeExportModal();
 
-    showLoading("Preparing Excel...");
+    document.getElementById("loading").style.display = "flex";
 
     try{
 
@@ -1276,7 +1276,7 @@ async function startExport(){
 
         const base64 = await res.text();
 
-        hideLoading();
+    document.getElementById("loading").style.display = "none";
 
         const bytes = Uint8Array.from(
             atob(base64),
@@ -1312,7 +1312,7 @@ async function startExport(){
 
     }catch(err){
 
-        hideLoading();
+        document.getElementById("loading").style.display = "none";
 
         showDialog(
             "Export Failed",
