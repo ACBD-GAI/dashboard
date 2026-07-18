@@ -1275,6 +1275,8 @@ async function startExport(){
         );
 
         const base64 = await res.text();
+     console.log(base64);
+alert(base64.substring(0,300));
 
     document.getElementById("loading").style.display = "none";
 
