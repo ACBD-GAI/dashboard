@@ -761,7 +761,40 @@ loadDashboard();
 
 async function editItem(branch,row){
 
-    alert("WORKING\nBranch: " + branch + "\nRow: " + row);
+    const sheet = document.getElementById("sheetSelect").value;
+
+    try{
+
+        const res = await fetch(
+            API_URL +
+            "?action=getRecord" +
+            "&branch=" + encodeURIComponent(branch) +
+            "&sheet=" + encodeURIComponent(sheet) +
+            "&row=" + row +
+            getSessionParams()
+        );
+
+        const data = await res.json();
+
+        if(data.status != "OK"){
+            alert(data.message);
+            return;
+        }
+
+        document.getElementById("editBranch").value = branch;
+        document.getElementById("editRow").value = row;
+
+        document.getElementById("editTag").value = data.tag || "";
+        document.getElementById("editSI").value = data.si || "";
+
+        document.getElementById("editModal").style.display = "flex";
+
+    }catch(err){
+
+        console.error(err);
+        alert("Unable to load record.");
+
+    }
 
 }
 async function deleteItem(branch, row){
@@ -857,5 +890,60 @@ async function saveEdit(){
 
  
 </SCRIPT>  
+
+<div id="editModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.4);
+justify-content:center;
+align-items:center;
+z-index:99999;
+">
+
+<div style="
+background:white;
+padding:25px;
+border-radius:15px;
+width:350px;
+">
+
+<h3>Edit Record</h3>
+
+<input type="hidden" id="editBranch">
+<input type="hidden" id="editRow">
+
+<label>Tag</label>
+
+<input
+id="editTag"
+style="width:100%;padding:10px;margin-bottom:15px;">
+
+<label>SI Number</label>
+
+<input
+id="editSI"
+style="width:100%;padding:10px;margin-bottom:20px;">
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+
+<button onclick="closeEditModal()">
+Cancel
+</button>
+
+<button onclick="saveEdit()">
+Save
+</button>
+
+</div>
+
+</div>
+
+</div>
+ 
 </body>
 </html>
