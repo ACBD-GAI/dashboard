@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzSEas_jSSXH0OvoHwyZBWsm3BhabZajBEI0KetrjSnIeImkRvOe6Tv7Y17Y22ohoijGA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx3tWVMMQAant-3Q4xgdbTKyfETVa2PRSRNs55WtGXtSqnUx9KHHN1kX0wQAnaPOo_-Qw/exec";
 
 console.log("SCRIPT STARTED");
 window.onerror=function(msg,url,line,col,error){
@@ -1261,37 +1261,6 @@ OK
 </div>
  
  
-document.getElementById("dialogOK").onclick = async function(){
-
-    console.log("OK BUTTON CLICKED");
-
-    if(dialogCallback){
-
-        console.log("CALLBACK FOUND");
-
-        try{
-
-            await dialogCallback();
-
-            console.log("CALLBACK FINISHED");
-
-        }catch(err){
-
-            console.error("DELETE ERROR:", err);
-
-        }
-
-        dialogCallback = null;
-
-    }else{
-
-        console.log("NO CALLBACK");
-
-        closeDialog();
-
-    }
-
-};
 
 
 
