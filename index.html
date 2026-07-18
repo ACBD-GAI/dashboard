@@ -74,6 +74,104 @@ button:hover{
 button:active{
     transform:scale(.97);
 }
+
+.customDialog{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+justify-content:center;
+align-items:center;
+z-index:999999;
+}
+
+
+.dialogBox{
+
+background:white;
+width:380px;
+padding:30px;
+border-radius:20px;
+box-shadow:0 20px 50px rgba(0,0,0,.25);
+text-align:center;
+animation:popup .2s ease;
+
+}
+
+
+.dialogIcon{
+
+font-size:45px;
+margin-bottom:15px;
+
+}
+
+
+.dialogTitle{
+
+font-size:22px;
+font-weight:bold;
+margin-bottom:10px;
+
+}
+
+
+.dialogMessage{
+
+color:#666;
+margin-bottom:25px;
+
+}
+
+
+.dialogButtons{
+
+display:flex;
+justify-content:center;
+gap:15px;
+
+}
+
+
+.dialogBtn{
+
+padding:12px 25px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+
+}
+
+
+.dialogOK{
+
+background:#2196f3;
+color:white;
+
+}
+
+
+.dialogCancel{
+
+background:#eee;
+
+}
+
+
+@keyframes popup{
+
+from{
+transform:scale(.8);
+opacity:0;
+}
+
+to{
+transform:scale(1);
+opacity:1;
+}
+
+}
  
 
   
@@ -264,7 +362,7 @@ VERIFY OTP
 <tbody id="tableBody">
 
 <tr>
-<td colspan="5" style="text-align:center;padding:40px;">
+<td colspan="7" style="text-align:center;padding:40px;">
 No data loaded.
 </td>
 </tr>
@@ -698,40 +796,64 @@ function renderTable(rows){
 
     const body=document.getElementById("tableBody");
 
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+
     if(!rows || rows.length===0){
+
         body.innerHTML=`
         <tr>
-            <td colspan="5" style="text-align:center;padding:40px">
+            <td colspan="7" style="text-align:center;padding:40px">
                 No data found.
             </td>
         </tr>`;
+
         return;
     }
 
+
     body.innerHTML = rows.map(r => `
+
 <tr>
-    <td>${r.branch}</td>
-    <td>${r.lenstype}</td>
-    <td>${r.description}</td>
-    <td>${r.tag}</td>
-    <td>${r.si}</td>
-    <td>${r.date}</td>
 
- <td>
+<td>${r.branch}</td>
+<td>${r.lenstype}</td>
+<td>${r.description}</td>
+<td>${r.tag}</td>
+<td>${r.si}</td>
+<td>${r.date}</td>
 
-${document.getElementById("sheetSelect").value=="SCANRESULTS"
-? `<button onclick="editItem('${r.branch}',${r.row})">✏ Edit SI</button>`
-: ""}
+<td>
 
-<button onclick="deleteItem('${r.branch}',${r.row})">
-🗑 Delete
+
+${sheet=="SCANRESULTS"
+?
+`
+<button class="editBtn"
+onclick="editItem('${r.branch}',${r.row})">
+✏ Edit SI
 </button>
 
-</td>
-</tr>
-`).join("");
+<button class="deleteBtn"
+onclick="deleteItem('${r.branch}',${r.row})">
+🗑 Delete
+</button>
+`
+:
+`
+-
+`
 }
 
+
+</td>
+
+</tr>
+
+`).join("");
+
+}
 
 
 // BUTTON EVENTS
@@ -770,7 +892,11 @@ async function editItem(branch,row){
 
     if(sheet !== "SCANRESULTS"){
 
-        alert("Edit is only allowed for SOLD OUT.");
+        showDialog(
+"Not Allowed",
+"Edit is only available for SOLD OUT records.",
+"⚠️"
+);
 
         return;
 
@@ -790,7 +916,11 @@ async function editItem(branch,row){
         const data = await res.json();
 
         if(data.status != "OK"){
-            alert(data.message);
+            showDialog(
+"Error",
+data.message,
+"❌"
+);
             return;
         }
 
@@ -809,38 +939,59 @@ async function editItem(branch,row){
     }
 
 }
-async function deleteItem(branch, row){
+function deleteItem(branch,row){
 
-    if(!confirm("Delete this record?")) return;
+    showDialog(
+        "Delete Record?",
+        "Are you sure you want to permanently delete this item?",
+        "🗑️",
+        async function(){
 
-    const sheet =
-document.getElementById("sheetSelect").value;
+            const sheet =
+            document.getElementById("sheetSelect").value;
 
-const res = await fetch(
-    API_URL +
-    "?action=deleteRecord" +
-    "&branch=" + encodeURIComponent(branch) +
-    "&sheet=" + encodeURIComponent(sheet) +
-    "&row=" + row +
-    getSessionParams()
-);
 
-    const data = await res.json();
+            const res = await fetch(
+                API_URL +
+                "?action=deleteRecord" +
+                "&branch=" + encodeURIComponent(branch) +
+                "&sheet=" + encodeURIComponent(sheet) +
+                "&row=" + row +
+                getSessionParams()
+            );
 
-    if(data.status=="OK"){
 
-        alert("Deleted successfully.");
+            const text = await res.text();
 
-        loadDashboard();
+console.log("GET RECORD RESPONSE:",text);
 
-    }else{
+const data = JSON.parse(text);
 
-        alert(data.message);
 
-    }
+            if(data.status=="OK"){
+
+                showDialog(
+                    "Deleted",
+                    "Record deleted successfully.",
+                    "✅"
+                );
+
+                loadDashboard();
+
+            }else{
+
+                showDialog(
+                    "Error",
+                    data.message,
+                    "❌"
+                );
+
+            }
+
+        }
+    );
 
 }
-
 function closeEditModal(){
 
     document.getElementById("editModal").style.display="none";
@@ -862,7 +1013,11 @@ async function saveEdit(){
     // ONLY ALLOW SOLD OUT EDITING
     if(sheet !== "SCANRESULTS"){
 
-        alert("SI editing is only available for SOLD OUT records.");
+        showDialog(
+"Not Allowed",
+"SI editing is only available for SOLD OUT records.",
+"⚠️"
+);
 
         return;
     }
@@ -893,47 +1048,65 @@ async function saveEdit(){
 
         loadDashboard();
 
-        alert("SI updated.");
+        showDialog(
+"Updated",
+"SI number updated successfully.",
+"✅"
+);
 
     }else{
 
-        alert(data.message);
+        showDialog(
+"Error",
+data.message,
+"❌"
+);
 
     }
 
 }
 
 
- function updateSI(e){
+ 
+ 
 
-const branch = e.parameter.branch;
-const row = Number(e.parameter.row);
-const si = e.parameter.si;
+  
+  
 
-
-const ss = getSpreadsheet(branch);
-
-const sheet =
-ss.getSheetByName("SCANRESULTS");
+let dialogCallback=null;
 
 
-sheet.getRange(row,5).setValue(si);
+function showDialog(title,message,icon="⚠️",callback=null){
 
+document.getElementById("dialogTitle").innerHTML=title;
+document.getElementById("dialogMessage").innerHTML=message;
+document.getElementById("dialogIcon").innerHTML=icon;
 
-return {
-status:"OK"
-};
+dialogCallback=callback;
+
+document.getElementById("dialog").style.display="flex";
 
 }
 
- 
 
-  
-  
+function closeDialog(){
+
+document.getElementById("dialog").style.display="none";
+
+dialogCallback=null;
+
+}
 
 
- 
-</SCRIPT>  
+document.getElementById("dialogOK").onclick=function(){
+
+if(dialogCallback){
+dialogCallback();
+}
+
+closeDialog();
+
+};
 
 <div id="editModal"
 style="
@@ -979,11 +1152,58 @@ Cancel
 Save
 </button>
 
+
+<div id="dialog" class="customDialog">
+ 
+<div class="dialogBox">
+
+<div id="dialogIcon" class="dialogIcon">
+⚠️
+</div>
+
+<div id="dialogTitle" class="dialogTitle">
+Confirm
+</div>
+
+<div id="dialogMessage" class="dialogMessage">
+Message
+</div>
+
+
+<div class="dialogButtons">
+
+<button 
+class="dialogBtn dialogCancel"
+onclick="closeDialog()">
+Cancel
+</button>
+
+
+<button 
+id="dialogOK"
+class="dialogBtn dialogOK">
+OK
+</button>
+
 </div>
 
 </div>
 
 </div>
  
+ 
+
+
+</div>
+
+</div>
+
+</div>
+ 
+
+
+ 
+</SCRIPT>  
+
 </body>
 </html>
