@@ -1371,8 +1371,13 @@ function closeUpdateStockModal(){
 
 async function updateStocks(){
 
+    console.log("=== updateStocks() START ===");
+
     const branch = document.getElementById("updateBranch").value;
     const file = document.getElementById("stockFile").files[0];
+
+    console.log("Branch:", branch);
+    console.log("File:", file);
 
     if(!branch){
 
@@ -1423,6 +1428,7 @@ async function updateStocks(){
 
   const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
 
+     console.log("Sending upload request...");
 const res = await fetch(API_URL, {
     method: "POST",
     headers: {
@@ -1438,7 +1444,12 @@ const res = await fetch(API_URL, {
     })
 });
 
-        const data = await res.json();
+        const text = await res.text();
+
+console.log("SERVER RESPONSE:");
+console.log(text);
+
+const data = JSON.parse(text);
 
         document.getElementById("loading").style.display="none";
 
