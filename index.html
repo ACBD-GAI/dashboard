@@ -766,15 +766,18 @@ const search =
 document.getElementById("searchBox").value.trim();
 
 
-const res = await fetch(
+const url =
 API_URL+
 "?action=summary"+
 "&branch="+encodeURIComponent(branch)+
 "&sheet="+encodeURIComponent(sheet)+
 "&search="+encodeURIComponent(search)+
 "&load=1"+
-getSessionParams()
-);
+getSessionParams();
+
+console.log("REQUEST URL:", url);
+
+const res = await fetch(url);
 
         const text = await res.text();
 
@@ -1281,36 +1284,15 @@ async function startExport(){
 
     try{
 
-       const session =
-JSON.parse(
-    localStorage.getItem(SESSION_KEY) || "{}"
-);
+        const res = await fetch(
 
-const res = await fetch(API_URL, {
+            API_URL+
+            "?action=export"+
+            "&branch="+encodeURIComponent(branch)+
+            "&sheet="+encodeURIComponent(sheet)+
+            getSessionParams()
 
-    method: "POST",
-
-    headers: {
-        "Content-Type": "application/json"
-    },
-
-    body: JSON.stringify({
-
-        action: "uploadStock",
-
-        branch: branch,
-
-        fileName: file.name,
-
-        file: base64,
-
-        email: session.email,
-
-        sessionId: session.sessionId
-
-    })
-
-});
+        );
 
        const base64 = await res.text();
 
