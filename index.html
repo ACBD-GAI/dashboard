@@ -1274,7 +1274,7 @@ async function startExport(){
 
         );
 
-       const base64 = await response.text();
+       const base64 = await res.text();
 
 
 if(
@@ -1289,16 +1289,16 @@ if(
 }
 
 
-const bytes = atob(base64);
+document.getElementById("loading").style.display = "none";
 
 
-    document.getElementById("loading").style.display = "none";
+const bytes = Uint8Array.from(
+    atob(base64),
+    c => c.charCodeAt(0)
+);
 
-        const bytes = Uint8Array.from(
-            atob(base64),
-            c => c.charCodeAt(0)
-        );
 
+     
         const blob = new Blob(
             [bytes],
             {
