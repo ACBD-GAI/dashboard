@@ -1421,19 +1421,21 @@ async function updateStocks(){
 
         const base64 = btoa(binary);
 
-       const body =
-    "action=uploadStock" +
-    "&branch=" + encodeURIComponent(branch) +
-    "&fileName=" + encodeURIComponent(file.name) +
-    "&file=" + encodeURIComponent(base64) +
-    getSessionParams();
+  const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
 
 const res = await fetch(API_URL, {
     method: "POST",
     headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/json"
     },
-    body: body
+    body: JSON.stringify({
+        action: "uploadStock",
+        branch: branch,
+        fileName: file.name,
+        file: base64,
+        email: session.email,
+        sessionId: session.sessionId
+    })
 });
 
         const data = await res.json();
