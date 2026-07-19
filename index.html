@@ -398,7 +398,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxgwfIas6bBwnmoZYiuLZ23q-kjSPrhAZ9jIidWhS8bQSAng502YeBWFE1hfX_5LmzITg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzGWCAbQv15wqxKg8931fsTsYV9_WlR-YaFHDzbevRBVmzIxfFL4UcDGQ_E-4WqUbiTaw/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1276,7 +1276,7 @@ async function startExport(){
 
         const base64 = await res.text();
      console.log(base64);
-alert(base64.substring(0,300));
+
 
     document.getElementById("loading").style.display = "none";
 
