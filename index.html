@@ -911,6 +911,15 @@ onclick="deleteItem('${r.branch}',${r.row})">
 
 // BUTTON EVENTS
 
+ document.getElementById("updateStockBtn").onclick = function(){
+
+    document.getElementById("updateBranch").value = "";
+    document.getElementById("stockFile").value = "";
+
+    document.getElementById("updateStockModal").style.display = "flex";
+
+};
+
 document.getElementById("searchBtn").onclick = loadDashboard;
 
 document.getElementById("refreshBtn").onclick = loadDashboard;
@@ -1348,6 +1357,14 @@ const bytes = Uint8Array.from(
 
 }
 
+
+function closeUpdateStockModal(){
+
+    document.getElementById("updateStockModal").style.display = "none";
+
+}
+
+ 
 
 async function updateStocks(){
 
