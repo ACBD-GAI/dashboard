@@ -404,7 +404,7 @@ No data loaded.
 const SESSION_KEY = "inventorySession";
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxCcj9-uwDtbIWFnJjU7QfklkVhTSd8jiP2koo0pRPCl3hMmChX7b8bIz_mxXohhx3jAg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwN9lpqrB8qMSwOd1WfDIkTSS2iSE10Xoh2fIa4pDoJOMU6tgKdf7PQ7WNxrfrDw253Nw/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1426,22 +1426,20 @@ async function updateStocks(){
 
         const base64 = btoa(binary);
 
-  const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
+const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
 
-     console.log("Sending upload request...");
+const form = new FormData();
+
+form.append("action", "uploadStock");
+form.append("branch", branch);
+form.append("fileName", file.name);
+form.append("file", base64);
+form.append("email", session.email);
+form.append("sessionId", session.sessionId);
+
 const res = await fetch(API_URL, {
     method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        action: "uploadStock",
-        branch: branch,
-        fileName: file.name,
-        file: base64,
-        email: session.email,
-        sessionId: session.sessionId
-    })
+    body: form
 });
 
         const text = await res.text();
