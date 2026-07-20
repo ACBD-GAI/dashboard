@@ -1214,7 +1214,7 @@ function closeDialog(){
 
 
 
-async function dialogOKClick(){
+ async function dialogOKClick(){
 
     console.log("OK BUTTON CLICKED");
 
@@ -1222,8 +1222,6 @@ async function dialogOKClick(){
 
         const fn = dialogCallback;
         dialogCallback = null;
-
-        closeDialog();   // Close immediately
 
         await fn();
 
@@ -1308,24 +1306,49 @@ document.getElementById("prevBtn").onclick=function(){
 
     }
 
-async function dialogOKClick(){
+    showDialog(
+        "Confirm Clear",
+        "This will permanently clear all data of the selected report.\n\nContinue?",
+        "⚠️",
+        async function(){
 
-    console.log("OK BUTTON CLICKED");
+            closeClearModal();
 
-    if(dialogCallback){
+            const res = await fetch(
+                API_URL +
+                "?action=clearSheet" +
+                "&branch=" + encodeURIComponent(branch) +
+                "&sheet=" + encodeURIComponent(sheet) +
+                getSessionParams()
+            );
 
-        const fn = dialogCallback;
-        dialogCallback = null;
+            const data = await res.json();
 
-        closeDialog();   // Close immediately
+            if(data.status=="OK"){
 
-        await fn();
+                showDialog(
+                    "Success",
+                    "Report cleared successfully.",
+                    "✅",
+                    null,
+                    true
+                );
 
-    }else{
+            }else{
 
-        closeDialog();
+                showDialog(
+                    "Error",
+                    data.message,
+                    "❌",
+                    null,
+                    true
+                );
 
-    }
+            }
+
+        }
+
+    );
 
 }
 
