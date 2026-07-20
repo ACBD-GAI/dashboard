@@ -1452,12 +1452,12 @@ const data = JSON.parse(text);
             closeUpdateStockModal();
 
             showDialog(
-                "Success",
-                +data.rows"Items updated successfully.",
-                "✅",
-                null,
-                true
-            );
+       "Success",
+       "Items updated successfully.\n\nRows Imported: " + data.rows,
+       "✅",
+       null,
+       true
+);
 
         }else{
 
