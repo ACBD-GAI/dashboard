@@ -282,6 +282,7 @@ VERIFY OTP
   <div class="header-right">
     <button id="refreshBtn">🔄 Refresh</button>
     <button id="updateStockBtn">📤 Update Stocks</button>
+   <button id="clearBtn">🗑 Clear Report</button>
     <button id="exportBtn">📥 Export</button>
     <button id="reportBtn">📧 Report</button>
     <button id="logoutBtn">Logout</button>
@@ -917,6 +918,17 @@ onclick="deleteItem('${r.branch}',${r.row})">
 
     document.getElementById("updateStockModal").style.display = "flex";
 
+  
+
+};
+
+ document.getElementById("clearBtn").onclick = function(){
+
+    document.getElementById("clearBranch").value = "";
+    document.getElementById("clearSheet").value = "";
+
+    document.getElementById("clearModal").style.display = "flex";
+
 };
 
 document.getElementById("searchBtn").onclick = loadDashboard;
@@ -1252,6 +1264,91 @@ document.getElementById("prevBtn").onclick=function(){
  function closeExportModal(){
 
     document.getElementById("exportModal").style.display="none";
+
+}
+
+ function closeClearModal(){
+
+    document.getElementById("clearModal").style.display = "none";
+
+}
+
+ async function clearReport(){
+
+    const branch = document.getElementById("clearBranch").value;
+    const sheet = document.getElementById("clearSheet").value;
+
+    if(!branch){
+
+        showDialog(
+            "Branch Required",
+            "Please select a branch.",
+            "⚠️",
+            null,
+            true
+        );
+
+        return;
+
+    }
+
+    if(!sheet){
+
+        showDialog(
+            "Report Required",
+            "Please select a report.",
+            "⚠️",
+            null,
+            true
+        );
+
+        return;
+
+    }
+
+    showDialog(
+        "Confirm Clear",
+        "This will permanently clear all data from A2:AA of the selected report.\n\nContinue?",
+        "⚠️",
+        async function(){
+
+            closeClearModal();
+
+            const res = await fetch(
+                API_URL +
+                "?action=clearSheet" +
+                "&branch=" + encodeURIComponent(branch) +
+                "&sheet=" + encodeURIComponent(sheet) +
+                getSessionParams()
+            );
+
+            const data = await res.json();
+
+            if(data.status=="OK"){
+
+                showDialog(
+                    "Success",
+                    "Report cleared successfully.",
+                    "✅",
+                    null,
+                    true
+                );
+
+            }else{
+
+                showDialog(
+                    "Error",
+                    data.message,
+                    "❌",
+                    null,
+                    true
+                );
+
+            }
+
+        }
+
+    );
 
 }
 
@@ -1698,6 +1795,71 @@ Cancel
 
 <button onclick="updateStocks()">
 Update
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+ <div id="clearModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.4);
+justify-content:center;
+align-items:center;
+z-index:999999;
+">
+
+<div style="
+background:#fff;
+padding:25px;
+border-radius:15px;
+width:380px;
+">
+
+<h3>Clear Report</h3>
+
+<label>Select Branch</label>
+
+<select id="clearBranch"
+style="width:100%;padding:12px;margin:10px 0 20px">
+
+<option value="">-- Select Branch --</option>
+<option value="GAI">🏢 Gaisano Iloilo</option>
+<option value="CAS">🏢 Casa Plaza</option>
+<option value="BAC">🏢 Bacolod</option>
+
+</select>
+
+<label>Select Report</label>
+
+<select id="clearSheet"
+style="width:100%;padding:12px;margin:10px 0 20px">
+
+<option value="">-- Select Report --</option>
+<option value="stocks">📦 Stocks</option>
+<option value="SCANRESULTS">💰 Sold Out</option>
+<option value="AUDIT">🔄 Re-Inventory</option>
+
+</select>
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+
+<button onclick="closeClearModal()">
+Cancel
+</button>
+
+<button onclick="clearReport()">
+Clear
 </button>
 
 </div>
