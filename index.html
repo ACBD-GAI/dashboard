@@ -402,7 +402,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwVdoh4h5RZ9mJIwcyScAgX76yiqHkuyIQOEc7RXSehESGQGYNEvQ0xUlcVoYwFCoNDRQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwUYXUFRrbFV_RHN1mI9KW966fxfB8fpFwsCeUlnh9BM4ftJlBuXOYipHhGrnGYhVj36A/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1543,31 +1543,35 @@ const data = JSON.parse(text);
 
         document.getElementById("loading").style.display="none";
 
-        if(data.status=="OK"){
+       if(data.status=="QUEUED"){
 
-            closeUpdateStockModal();
+    closeUpdateStockModal();
 
-            showDialog(
-       "Success",
-       "Items updated successfully.\n\nRows Imported: " + data.rows,
-       "✅",
-       null,
-       true
-);
+    showDialog(
+        "Upload Started",
+        "The file has been queued.\n\nYou can continue using the Dashboard while it imports in the background.",
+        "⏳",
+        null,
+        true
+    );
 
-        }else{
+    startImportJob();
 
-            showDialog(
-                "Error",
-                data.message || data.status,
-                "❌",
-                null,
-                true
-            );
+}else{
 
-        }
+    showDialog(
+        "Error",
+        data.message || data.status,
+        "❌",
+        null,
+        true
+    );
 
-    }catch(err){
+}
+
+    }
+    
+    catch(err){
 
         document.getElementById("loading").style.display="none";
 
@@ -1578,6 +1582,25 @@ const data = JSON.parse(text);
             null,
             true
         );
+
+    }
+
+}
+
+
+ async function startImportJob(){
+
+    try{
+
+        await fetch(
+            API_URL +
+            "?action=processJob" +
+            getSessionParams()
+        );
+
+    }catch(err){
+
+        console.log(err);
 
     }
 
