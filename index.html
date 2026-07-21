@@ -1227,7 +1227,7 @@ function closeDialog(){
 
     }else{
 
-        closeDialog();
+closeDialog();        
 
     }
 
@@ -1306,52 +1306,51 @@ document.getElementById("prevBtn").onclick=function(){
 
     }
 
-    showDialog(
-        "Confirm Clear",
-        "This will permanently clear all data of the selected report.\n\nContinue?",
-        "⚠️",
-        async function(){
+   showDialog(
+    "Confirm Clear",
+    "This will permanently clear all data of the selected report.\n\nContinue?",
+    "⚠️",
+    async function(){
 
-            closeClearModal();
+        closeDialog();          // <-- ADD THIS
+        closeClearModal();
 
-            const res = await fetch(
-                API_URL +
-                "?action=clearSheet" +
-                "&branch=" + encodeURIComponent(branch) +
-                "&sheet=" + encodeURIComponent(sheet) +
-                getSessionParams()
+        const res = await fetch(
+            API_URL +
+            "?action=clearSheet" +
+            "&branch=" + encodeURIComponent(branch) +
+            "&sheet=" + encodeURIComponent(sheet) +
+            getSessionParams()
+        );
+
+        const data = await res.json();
+
+        if(data.status=="OK"){
+
+            showDialog(
+                "Success",
+                "Report cleared successfully.",
+                "✅",
+                null,
+                true
             );
 
-            const data = await res.json();
+        }else{
 
-            if(data.status=="OK"){
-
-                showDialog(
-                    "Success",
-                    "Report cleared successfully.",
-                    "✅",
-                    null,
-                    true
-                );
-
-            }else{
-
-                showDialog(
-                    "Error",
-                    data.message,
-                    "❌",
-                    null,
-                    true
-                );
-
-            }
+            showDialog(
+                "Error",
+                data.message,
+                "❌",
+                null,
+                true
+            );
 
         }
 
-    );
-
-}
-
+    }
+);
+  
+ }
 async function startExport(){
 
     const branch = document.getElementById("exportBranch").value;
