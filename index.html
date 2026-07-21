@@ -402,7 +402,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwUYXUFRrbFV_RHN1mI9KW966fxfB8fpFwsCeUlnh9BM4ftJlBuXOYipHhGrnGYhVj36A/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyAlC_F_UatWrjOC68SB_mZZUlVB5wY0tUgLutOUhRt4aHPpAEFt5iv22uSTiiUymf7Ow/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1227,7 +1227,7 @@ function closeDialog(){
 
     }else{
 
-closeDialog();        
+        closeDialog();
 
     }
 
@@ -1306,51 +1306,52 @@ document.getElementById("prevBtn").onclick=function(){
 
     }
 
-   showDialog(
-    "Confirm Clear",
-    "This will permanently clear all data of the selected report.\n\nContinue?",
-    "⚠️",
-    async function(){
+    showDialog(
+        "Confirm Clear",
+        "This will permanently clear all data of the selected report.\n\nContinue?",
+        "⚠️",
+        async function(){
 
-        closeDialog();          // <-- ADD THIS
-        closeClearModal();
+            closeClearModal();
 
-        const res = await fetch(
-            API_URL +
-            "?action=clearSheet" +
-            "&branch=" + encodeURIComponent(branch) +
-            "&sheet=" + encodeURIComponent(sheet) +
-            getSessionParams()
-        );
-
-        const data = await res.json();
-
-        if(data.status=="OK"){
-
-            showDialog(
-                "Success",
-                "Report cleared successfully.",
-                "✅",
-                null,
-                true
+            const res = await fetch(
+                API_URL +
+                "?action=clearSheet" +
+                "&branch=" + encodeURIComponent(branch) +
+                "&sheet=" + encodeURIComponent(sheet) +
+                getSessionParams()
             );
 
-        }else{
+            const data = await res.json();
 
-            showDialog(
-                "Error",
-                data.message,
-                "❌",
-                null,
-                true
-            );
+            if(data.status=="OK"){
+
+                showDialog(
+                    "Success",
+                    "Report cleared successfully.",
+                    "✅",
+                    null,
+                    true
+                );
+
+            }else{
+
+                showDialog(
+                    "Error",
+                    data.message,
+                    "❌",
+                    null,
+                    true
+                );
+
+            }
 
         }
 
-    }
-);
-  
- }
+    );
+
+}
+
 async function startExport(){
 
     const branch = document.getElementById("exportBranch").value;
@@ -1543,35 +1544,31 @@ const data = JSON.parse(text);
 
         document.getElementById("loading").style.display="none";
 
-       if(data.status=="QUEUED"){
+        if(data.status=="OK"){
 
-    closeUpdateStockModal();
+            closeUpdateStockModal();
 
-    showDialog(
-        "Upload Started",
-        "The file has been queued.\n\nYou can continue using the Dashboard while it imports in the background.",
-        "⏳",
-        null,
-        true
-    );
+            showDialog(
+       "Success",
+       "Items updated successfully.\n\nRows Imported: " + data.rows,
+       "✅",
+       null,
+       true
+);
 
-    startImportJob();
+        }else{
 
-}else{
+            showDialog(
+                "Error",
+                data.message || data.status,
+                "❌",
+                null,
+                true
+            );
 
-    showDialog(
-        "Error",
-        data.message || data.status,
-        "❌",
-        null,
-        true
-    );
+        }
 
-}
-
-    }
-    
-    catch(err){
+    }catch(err){
 
         document.getElementById("loading").style.display="none";
 
@@ -1582,25 +1579,6 @@ const data = JSON.parse(text);
             null,
             true
         );
-
-    }
-
-}
-
-
- async function startImportJob(){
-
-    try{
-
-        await fetch(
-            API_URL +
-            "?action=processJob" +
-            getSessionParams()
-        );
-
-    }catch(err){
-
-        console.log(err);
 
     }
 
