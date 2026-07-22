@@ -1763,15 +1763,14 @@ if(data.jobStatus=="DONE"){
 clearInterval(timer);
 
 
-document.getElementById("jobIcon").innerHTML="✅";
+jobIcon.innerHTML="✅";
 
-document.getElementById("jobTitle").innerHTML=
-"Import Complete";
+jobTitle.innerHTML="Import Complete";
 
 
 setTimeout(()=>{
 
-jobBox.remove();
+    jobBox.remove();
 
 },5000);
 
@@ -1780,22 +1779,20 @@ jobBox.remove();
 }
 
 
-
 if(data.jobStatus=="FAILED"){
 
 
 clearInterval(timer);
 
 
-document.getElementById("jobIcon").innerHTML="❌";
+jobIcon.innerHTML="❌";
 
-document.getElementById("jobTitle").innerHTML=
-"Import Failed";
+jobTitle.innerHTML="Import Failed";
 
 
 setTimeout(()=>{
 
-document.getElementById("jobFloat").style.display="none";
+    jobBox.remove();
 
 },8000);
 
