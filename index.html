@@ -219,13 +219,18 @@ color:#666;
 
 #jobContainer{
     position:fixed;
-    left:15px;
     top:90px;
+    right:20px;
+    left:auto;
+
     width:320px;
+
     z-index:999999;
+
     display:flex;
     flex-direction:column;
     gap:12px;
+
     pointer-events:none;
 }
 
@@ -278,7 +283,7 @@ color:#666;
 @keyframes slideIn{
 
 from{
-    transform:translateX(-40px);
+    transform:translateX(40px);
     opacity:0;
 }
 
@@ -287,8 +292,7 @@ to{
     opacity:1;
 }
 
-}
- 
+} 
 
   
 </style>
