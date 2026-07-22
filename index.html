@@ -190,7 +190,7 @@ box-shadow:0 5px 20px rgba(0,0,0,.25);
 
 z-index:999999;
 
-display:none;
+
 align-items:center;
 gap:12px;
 
@@ -1608,16 +1608,8 @@ const res = await fetch(API_URL,{
     method:"POST",
     body:form
 });
-     
-form.append("email", session.email);
-form.append("sessionId", session.sessionId);
 
-const res = await fetch(API_URL, {
-    method: "POST",
-    body: form
-});
-
-        const text = await res.text();
+const text = await res.text();
 
 console.log("SERVER RESPONSE:");
 console.log(text);
