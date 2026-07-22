@@ -491,7 +491,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwCJ9xm02jlHws5EHCQrxBExIic7tZsKDGNWCDv_rr8iN2Usa_bt5i5Re0kB9iALcvh8w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyAiq60AwC7-AsbYk9k8tqdDGDGuRpHx26TJvaW85JQqlbg00qNG_fCE8_v5_O4W170EA/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1589,33 +1589,26 @@ closeUpdateStockModal();
 
     try{
 
-        const buffer = await file.arrayBuffer();
+        const form = new FormData();
 
-        let binary = "";
+form.append("action","uploadStock");
+form.append("branch",branch);
+form.append("fileName",file.name);
+form.append("file",file);
 
-        const bytes = new Uint8Array(buffer);
+const session = JSON.parse(
+    localStorage.getItem(SESSION_KEY) || "{}"
+);
 
-        const chunk = 0x8000;
+form.append("email",session.email);
+form.append("sessionId",session.sessionId);
 
-        for(let i=0;i<bytes.length;i+=chunk){
 
-            binary += String.fromCharCode.apply(
-                null,
-                bytes.subarray(i,i+chunk)
-            );
-
-        }
-
-        const base64 = btoa(binary);
-
-const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
-
-const form = new FormData();
-
-form.append("action", "uploadStock");
-form.append("branch", branch);
-form.append("fileName", file.name);
-form.append("file", base64);
+const res = await fetch(API_URL,{
+    method:"POST",
+    body:form
+});
+     
 form.append("email", session.email);
 form.append("sessionId", session.sessionId);
 
