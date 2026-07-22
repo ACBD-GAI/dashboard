@@ -190,7 +190,7 @@ box-shadow:0 5px 20px rgba(0,0,0,.25);
 
 z-index:999999;
 
-
+display:none;
 align-items:center;
 gap:12px;
 
@@ -491,7 +491,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwBNY_mF3i7Sz8kzxQzT7YTvHlY6AS3pRJLR-nwrvd1R-7b8wcwuS6ad5LzdMPiwycZxQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxK0iTg_bL2tYXj-fekobtRPKFeBNrsLgwp5gG1phzSzfZ57j6xJljmgTJEjFuLOZmGRA/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1589,27 +1589,42 @@ closeUpdateStockModal();
 
     try{
 
-        const form = new FormData();
+        const buffer = await file.arrayBuffer();
 
-form.append("action","uploadStock");
-form.append("branch",branch);
-form.append("fileName",file.name);
-form.append("file",file);
+        let binary = "";
 
-const session = JSON.parse(
-    localStorage.getItem(SESSION_KEY) || "{}"
-);
+        const bytes = new Uint8Array(buffer);
 
-form.append("email",session.email);
-form.append("sessionId",session.sessionId);
+        const chunk = 0x8000;
 
+        for(let i=0;i<bytes.length;i+=chunk){
 
-const res = await fetch(API_URL,{
-    method:"POST",
-    body:form
+            binary += String.fromCharCode.apply(
+                null,
+                bytes.subarray(i,i+chunk)
+            );
+
+        }
+
+        const base64 = btoa(binary);
+
+const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
+
+const form = new FormData();
+
+form.append("action", "uploadStock");
+form.append("branch", branch);
+form.append("fileName", file.name);
+form.append("file", base64);
+form.append("email", session.email);
+form.append("sessionId", session.sessionId);
+
+const res = await fetch(API_URL, {
+    method: "POST",
+    body: form
 });
 
-const text = await res.text();
+        const text = await res.text();
 
 console.log("SERVER RESPONSE:");
 console.log(text);
