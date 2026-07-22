@@ -217,49 +217,76 @@ color:#666;
 }
 
 
- #jobContainer{
+#jobContainer{
     position:fixed;
-    top:80px;
-    left:20px;
+    left:15px;
+    top:90px;
+    width:320px;
     z-index:999999;
     display:flex;
     flex-direction:column;
-    gap:10px;
+    gap:12px;
+    pointer-events:none;
 }
-
 
 .jobFloat{
 
-    background:white;
-    padding:12px 18px;
+    pointer-events:auto;
 
-    border-radius:12px;
+    background:#fff;
+    border-left:6px solid #2196f3;
 
-    box-shadow:0 5px 20px rgba(0,0,0,.25);
+    border-radius:14px;
+
+    padding:14px 16px;
 
     display:flex;
-    align-items:center;
-    gap:12px;
+    align-items:flex-start;
+    gap:14px;
 
-    font-size:14px;
+    box-shadow:0 8px 25px rgba(0,0,0,.20);
 
-    min-width:220px;
+    animation:slideIn .25s ease;
 
+    min-height:70px;
 }
-
 
 .jobIcon{
-    font-size:25px;
+    font-size:30px;
+    width:36px;
+    text-align:center;
 }
-
 
 .jobTitle{
+    font-weight:bold;
     color:#1976d2;
+    display:block;
+    margin-bottom:4px;
 }
-
 
 .jobBranch{
     color:#666;
+    display:block;
+    margin-top:2px;
+}
+
+.jobStatus{
+    color:#888;
+    font-size:13px;
+}
+
+@keyframes slideIn{
+
+from{
+    transform:translateX(-40px);
+    opacity:0;
+}
+
+to{
+    transform:translateX(0);
+    opacity:1;
+}
+
 }
  
 
@@ -1700,11 +1727,21 @@ jobBox.className="jobFloat";
 
 jobBox.innerHTML = `
 <div class="jobIcon">⏳</div>
-<div>
-<b class="jobTitle">Waiting...</b><br>
-<small class="jobBranch">
+
+<div style="flex:1">
+
+<span class="jobTitle">
+Inventory Import
+</span>
+
+<span class="jobBranch">
 Branch: ${branch}
-</small>
+</span>
+
+<div class="jobStatus">
+Waiting in queue...
+</div>
+
 </div>
 `;
 
@@ -1716,6 +1753,8 @@ jobBox.querySelector(".jobIcon");
 
 const jobTitle =
 jobBox.querySelector(".jobTitle");
+ const jobStatus =
+jobBox.querySelector(".jobStatus");
 
 
 const timer = setInterval(async ()=>{
@@ -1742,7 +1781,8 @@ console.log(data);
 if(data.jobStatus=="PENDING"){
 
 jobIcon.innerHTML="⏳";
-jobTitle.innerHTML="Waiting...";
+jobTitle.innerHTML="Inventory Import";
+jobStatus.innerHTML="Waiting in queue...";
 
 }
 
@@ -1751,7 +1791,8 @@ jobTitle.innerHTML="Waiting...";
 if(data.jobStatus=="RUNNING"){
 
 jobIcon.innerHTML="🔄";
-jobTitle.innerHTML="Importing...";
+jobTitle.innerHTML="Inventory Import";
+jobStatus.innerHTML="Importing stock file...";
 
 }
 
@@ -1765,7 +1806,8 @@ clearInterval(timer);
 
 jobIcon.innerHTML="✅";
 
-jobTitle.innerHTML="Import Complete";
+jobTitle.innerHTML="Completed";
+jobStatus.innerHTML="Import finished successfully.";
 
 
 setTimeout(()=>{
@@ -1787,7 +1829,8 @@ clearInterval(timer);
 
 jobIcon.innerHTML="❌";
 
-jobTitle.innerHTML="Import Failed";
+jobTitle.innerHTML="Failed";
+jobStatus.innerHTML="Unable to import file.";
 
 
 setTimeout(()=>{
