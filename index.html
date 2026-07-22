@@ -1459,62 +1459,7 @@ function closeUpdateStockModal(){
 
 }
 
-async function waitForImport(jobId){
 
-    const check = async () => {
-
-        const res = await fetch(
-            API_URL +
-            "?action=jobStatus" +
-            "&jobId=" + encodeURIComponent(jobId)
-        );
-
-        const data = await res.json();
-
-        console.log(data);
-
-        if(data.status !== "OK"){
-            return;
-        }
-
-        if(data.jobStatus === "DONE"){
-
-            document.getElementById("loading").style.display = "none";
-
-            showDialog(
-                "Import Complete",
-                "Stocks imported successfully.",
-                "✅",
-                null,
-                true
-            );
-
-            return;
-        }
-
-        if(data.jobStatus === "FAILED"){
-
-            document.getElementById("loading").style.display = "none";
-
-            showDialog(
-                "Import Failed",
-                data.result || "Import failed.",
-                "❌",
-                null,
-                true
-            );
-
-            return;
-        }
-
-        setTimeout(check,3000);
-
-    };
-
-    check();
-
-}
- 
  
 
 async function updateStocks(){
@@ -1551,7 +1496,7 @@ if(!file){
 
 closeUpdateStockModal();
 
-    document.getElementById("loading").style.display="flex";
+    
 
     try{
 
@@ -1597,7 +1542,7 @@ console.log(text);
 
 const data = JSON.parse(text);
 
-document.getElementById("loading").style.display = "none";
+
 
 if(data.status == "QUEUED"){
 
