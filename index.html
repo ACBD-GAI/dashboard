@@ -172,6 +172,49 @@ opacity:1;
 }
 
 }
+
+
+ #jobFloat{
+
+display:none;
+position:fixed;
+top:80px;
+left:20px;
+
+background:white;
+padding:12px 18px;
+
+border-radius:12px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.25);
+
+z-index:999999;
+
+display:flex;
+align-items:center;
+gap:12px;
+
+font-size:14px;
+
+}
+
+#jobIcon{
+
+font-size:25px;
+
+}
+
+#jobTitle{
+
+color:#1976d2;
+
+}
+
+#jobBranch{
+
+color:#666;
+
+}
  
 
   
@@ -1556,7 +1599,7 @@ if(data.status == "QUEUED"){
         true
     );
 
-    checkImportJob(data.jobId);
+    checkImportJob(data.jobId, branch);
 
 }else if(data.status == "OK"){
 
@@ -1599,58 +1642,115 @@ if(data.status == "QUEUED"){
 
 }
 
- async function checkImportJob(jobId){
+async function checkImportJob(jobId, branch){
 
-    const timer = setInterval(async ()=>{
 
-        try{
+document.getElementById("jobFloat").style.display="flex";
 
-            const res = await fetch(
-                API_URL +
-                "?action=getJobStatus" +
-                "&jobId=" + encodeURIComponent(jobId) +
-                getSessionParams()
-            );
+document.getElementById("jobBranch").innerHTML =
+"Branch: " + branch;
 
-            const data = await res.json();
 
-            console.log(data);
+const timer = setInterval(async ()=>{
 
-            if(data.jobStatus == "DONE"){
 
-                clearInterval(timer);
+try{
 
-                showDialog(
-                    "Import Complete",
-                    "Stocks have been updated successfully.",
-                    "✅",
-                    null,
-                    true
-                );
 
-            }
+const res = await fetch(
+API_URL +
+"?action=getJobStatus" +
+"&jobId=" + encodeURIComponent(jobId) +
+getSessionParams()
+);
 
-            if(data.jobStatus == "FAILED"){
 
-                clearInterval(timer);
+const data = await res.json();
 
-                showDialog(
-                    "Import Failed",
-                    data.result || "Unknown error.",
-                    "❌",
-                    null,
-                    true
-                );
 
-            }
+console.log(data);
 
-        }catch(err){
 
-            console.log(err);
 
-        }
+if(data.jobStatus=="PENDING"){
 
-    },3000);
+document.getElementById("jobIcon").innerHTML="⏳";
+
+document.getElementById("jobTitle").innerHTML=
+"Waiting...";
+
+}
+
+
+
+if(data.jobStatus=="RUNNING"){
+
+document.getElementById("jobIcon").innerHTML="🔄";
+
+document.getElementById("jobTitle").innerHTML=
+"Importing...";
+
+}
+
+
+
+if(data.jobStatus=="DONE"){
+
+
+clearInterval(timer);
+
+
+document.getElementById("jobIcon").innerHTML="✅";
+
+document.getElementById("jobTitle").innerHTML=
+"Import Complete";
+
+
+setTimeout(()=>{
+
+document.getElementById("jobFloat").style.display="none";
+
+},5000);
+
+
+
+}
+
+
+
+if(data.jobStatus=="FAILED"){
+
+
+clearInterval(timer);
+
+
+document.getElementById("jobIcon").innerHTML="❌";
+
+document.getElementById("jobTitle").innerHTML=
+"Import Failed";
+
+
+setTimeout(()=>{
+
+document.getElementById("jobFloat").style.display="none";
+
+},8000);
+
+
+
+}
+
+
+
+}catch(err){
+
+console.log(err);
+
+}
+
+
+},3000);
+
 
 }
  
@@ -1941,6 +2041,15 @@ Clear
 
  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-     
+<div id="jobFloat">
+    <div id="jobIcon">⏳</div>
+    <div>
+        <b id="jobTitle">Import Running</b><br>
+        <small id="jobBranch"></small>
+    </div>
+</div>
+
+
+ 
 </body>
 </html>
