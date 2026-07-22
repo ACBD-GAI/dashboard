@@ -402,7 +402,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyAlC_F_UatWrjOC68SB_mZZUlVB5wY0tUgLutOUhRt4aHPpAEFt5iv22uSTiiUymf7Ow/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyNJl_YRREgQ56w6J3m72HxpxfJ5NlmX6ZWdWFqpCPfPL52xoMY8ZzGOn7VmObctZEOgw/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1459,6 +1459,62 @@ function closeUpdateStockModal(){
 
 }
 
+async function waitForImport(jobId){
+
+    const check = async () => {
+
+        const res = await fetch(
+            API_URL +
+            "?action=jobStatus" +
+            "&jobId=" + encodeURIComponent(jobId)
+        );
+
+        const data = await res.json();
+
+        console.log(data);
+
+        if(data.status !== "OK"){
+            return;
+        }
+
+        if(data.jobStatus === "DONE"){
+
+            document.getElementById("loading").style.display = "none";
+
+            showDialog(
+                "Import Complete",
+                "Stocks imported successfully.",
+                "✅",
+                null,
+                true
+            );
+
+            return;
+        }
+
+        if(data.jobStatus === "FAILED"){
+
+            document.getElementById("loading").style.display = "none";
+
+            showDialog(
+                "Import Failed",
+                data.result || "Import failed.",
+                "❌",
+                null,
+                true
+            );
+
+            return;
+        }
+
+        setTimeout(check,3000);
+
+    };
+
+    check();
+
+}
+ 
  
 
 async function updateStocks(){
@@ -1543,31 +1599,35 @@ const data = JSON.parse(text);
 
         document.getElementById("loading").style.display="none";
 
-        if(data.status=="OK"){
+       if(data.status=="QUEUED"){
 
-            closeUpdateStockModal();
+    showDialog(
+        "Import Queued",
+        "Import is running in the background.\nYou may continue using the dashboard.",
+        "✅",
+        null,
+        true
+    );
 
-            showDialog(
-       "Success",
-       "Items updated successfully.\n\nRows Imported: " + data.rows,
-       "✅",
-       null,
-       true
-);
+    waitForImport(data.jobId);
 
-        }else{
+}else{
 
-            showDialog(
-                "Error",
-                data.message || data.status,
-                "❌",
-                null,
-                true
-            );
+    document.getElementById("loading").style.display="none";
 
-        }
+    showDialog(
+        "Error",
+        data.message || data.status,
+        "❌",
+        null,
+        true
+    );
 
-    }catch(err){
+}    
+    
+    }
+    
+    catch(err){
 
         document.getElementById("loading").style.display="none";
 
