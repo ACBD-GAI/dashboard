@@ -215,6 +215,52 @@ color:#1976d2;
 color:#666;
 
 }
+
+
+ #jobContainer{
+    position:fixed;
+    top:80px;
+    left:20px;
+    z-index:999999;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+
+.jobFloat{
+
+    background:white;
+    padding:12px 18px;
+
+    border-radius:12px;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.25);
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    font-size:14px;
+
+    min-width:220px;
+
+}
+
+
+.jobIcon{
+    font-size:25px;
+}
+
+
+.jobTitle{
+    color:#1976d2;
+}
+
+
+.jobBranch{
+    color:#666;
+}
  
 
   
@@ -1648,11 +1694,28 @@ if(!jobId || !branch){
     return;
 }
 
+const jobBox = document.createElement("div");
 
-document.getElementById("jobFloat").style.display="flex";
+jobBox.className="jobFloat";
 
-document.getElementById("jobBranch").innerHTML =
-"Branch: " + branch;
+jobBox.innerHTML = `
+<div class="jobIcon">⏳</div>
+<div>
+<b class="jobTitle">Waiting...</b><br>
+<small class="jobBranch">
+Branch: ${branch}
+</small>
+</div>
+`;
+
+document.getElementById("jobContainer").appendChild(jobBox);
+
+
+const jobIcon =
+jobBox.querySelector(".jobIcon");
+
+const jobTitle =
+jobBox.querySelector(".jobTitle");
 
 
 const timer = setInterval(async ()=>{
@@ -1678,10 +1741,8 @@ console.log(data);
 
 if(data.jobStatus=="PENDING"){
 
-document.getElementById("jobIcon").innerHTML="⏳";
-
-document.getElementById("jobTitle").innerHTML=
-"Waiting...";
+jobIcon.innerHTML="⏳";
+jobTitle.innerHTML="Waiting...";
 
 }
 
@@ -2045,13 +2106,7 @@ Clear
 
  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-<div id="jobFloat">
-    <div id="jobIcon">⏳</div>
-    <div>
-        <b id="jobTitle">Import Running</b><br>
-        <small id="jobBranch"></small>
-    </div>
-</div>
+<div id="jobContainer"></div>
 
 
  
