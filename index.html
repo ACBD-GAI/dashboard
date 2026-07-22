@@ -1750,10 +1750,8 @@ jobTitle.innerHTML="Waiting...";
 
 if(data.jobStatus=="RUNNING"){
 
-document.getElementById("jobIcon").innerHTML="🔄";
-
-document.getElementById("jobTitle").innerHTML=
-"Importing...";
+jobIcon.innerHTML="🔄";
+jobTitle.innerHTML="Importing...";
 
 }
 
@@ -1773,7 +1771,7 @@ document.getElementById("jobTitle").innerHTML=
 
 setTimeout(()=>{
 
-document.getElementById("jobFloat").style.display="none";
+jobBox.remove();
 
 },5000);
 
