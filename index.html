@@ -402,7 +402,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzyt5SDET8pG95IwOWwbUq7MIT-Rmz9RfYX2BxpgC_OwLsOUzEgzmuleG0Ja0LHykGjEw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbywflWtxHQR7MywbR5TWWJCqnkJ-PnE5WC-8Mh-D_yYWlsrBti84ouLTOIbQX4u37g9Hg/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1651,6 +1651,61 @@ if(data.status == "QUEUED"){
         );
 
     }
+
+}
+
+ async function checkImportJob(jobId){
+
+    const timer = setInterval(async ()=>{
+
+        try{
+
+            const res = await fetch(
+                API_URL +
+                "?action=getJobStatus" +
+                "&jobId=" + encodeURIComponent(jobId) +
+                getSessionParams()
+            );
+
+            const data = await res.json();
+
+            console.log(data);
+
+            if(data.jobStatus == "DONE"){
+
+                clearInterval(timer);
+
+                showDialog(
+                    "Import Complete",
+                    "Stocks have been updated successfully.",
+                    "✅",
+                    null,
+                    true
+                );
+
+            }
+
+            if(data.jobStatus == "FAILED"){
+
+                clearInterval(timer);
+
+                showDialog(
+                    "Import Failed",
+                    data.result || "Unknown error.",
+                    "❌",
+                    null,
+                    true
+                );
+
+            }
+
+        }catch(err){
+
+            console.log(err);
+
+        }
+
+    },3000);
 
 }
  
