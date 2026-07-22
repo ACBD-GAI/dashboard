@@ -402,7 +402,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyNJl_YRREgQ56w6J3m72HxpxfJ5NlmX6ZWdWFqpCPfPL52xoMY8ZzGOn7VmObctZEOgw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzyt5SDET8pG95IwOWwbUq7MIT-Rmz9RfYX2BxpgC_OwLsOUzEgzmuleG0Ja0LHykGjEw/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1597,23 +1597,35 @@ console.log(text);
 
 const data = JSON.parse(text);
 
-        document.getElementById("loading").style.display="none";
+document.getElementById("loading").style.display = "none";
 
-       if(data.status=="QUEUED"){
+if(data.status == "QUEUED"){
+
+    closeUpdateStockModal();
 
     showDialog(
-        "Import Queued",
-        "Import is running in the background.\nYou may continue using the dashboard.",
+        "Import Started",
+        "The import is now running in the background.\n\nYou can continue using the dashboard.",
+        "⏳",
+        null,
+        true
+    );
+
+    checkImportJob(data.jobId);
+
+}else if(data.status == "OK"){
+
+    closeUpdateStockModal();
+
+    showDialog(
+        "Success",
+        "Items updated successfully.\n\nRows Imported: " + data.rows,
         "✅",
         null,
         true
     );
 
-    waitForImport(data.jobId);
-
 }else{
-
-    document.getElementById("loading").style.display="none";
 
     showDialog(
         "Error",
@@ -1624,7 +1636,6 @@ const data = JSON.parse(text);
     );
 
 }    
-    
     }
     
     catch(err){
