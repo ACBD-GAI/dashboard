@@ -1161,9 +1161,11 @@ async function deleteItem(branch,row){
 
      console.log("SERVER RETURNED:", data);
 
-               if(data.status=="OK"){
+if(data.status=="OK"){
 
     closeDialog();
+
+    await loadDashboard();
 
     showDialog(
         "Deleted",
@@ -1172,9 +1174,6 @@ async function deleteItem(branch,row){
         null,
         true
     );
-
-    // reload dashboard in background
-    loadDashboard();
 
 }
                
