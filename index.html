@@ -1664,15 +1664,9 @@ if(data.status == "QUEUED"){
 
     closeUpdateStockModal();
 
-    showDialog(
-        "Import Started",
-        "The import is now running in the background.\n\nYou can continue using the dashboard.",
-        "⏳",
-        null,
-        true
-    );
-
     checkImportJob(data.jobId, branch);
+
+}
 
 }else if(data.status == "OK"){
 
