@@ -520,7 +520,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycby82NGaCgm-68Ym-G_muRK4prqgp_Nsw5_7cu09d666NV_PeVytjZAuMfIhvabQ0kop6w/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxJbJZtnGtgwVyI5JP_NBW0KmJAU9G5Xim3ArPc7b0n0xFduTjXw9idhFext0O5N3-fgw/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -942,7 +942,7 @@ document.getElementById("showingCount").textContent =
     
     finally{
 
-        document.getElementById("loading").style.display="none";
+        
 
     }
 
@@ -1470,7 +1470,6 @@ document.getElementById("prevBtn").onclick=function(){
 async function startExport(){
 
     const branch = document.getElementById("exportBranch").value;
-    const sheet  = document.getElementById("sheetSelect").value;
 
     if(!branch){
 
@@ -1481,86 +1480,33 @@ async function startExport(){
             null,
             true
         );
-
         return;
-
     }
 
     closeExportModal();
 
-    document.getElementById("loading").style.display = "flex";
+    const res = await fetch(
+        API_URL +
+        "?action=export" +
+        "&branch=" + encodeURIComponent(branch) +
+        getSessionParams()
+    );
 
-    try{
+    const data = await res.json();
 
-        const res = await fetch(
-
-            API_URL+
-            "?action=export"+
-            "&branch="+encodeURIComponent(branch)+
-            "&sheet="+encodeURIComponent(sheet)+
-            getSessionParams()
-
-        );
-
-       const base64 = await res.text();
-
-
-if(
-  base64.startsWith("INVALID") ||
-  base64.startsWith("ERROR") ||
-  base64.startsWith("Exception")
-){
-
-  alert(base64);
-  return;
-
-}
-
-
-document.getElementById("loading").style.display = "none";
-
-
-const bytes = Uint8Array.from(
-    atob(base64),
-    c => c.charCodeAt(0)
-);
-
-
-     
-        const blob = new Blob(
-            [bytes],
-            {
-                type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            }
-        );
-
-        const a=document.createElement("a");
-
-        a.href=URL.createObjectURL(blob);
-
-        a.download=branch+"_"+sheet+".xlsx";
-
-        document.body.appendChild(a);
-
-        a.click();
-
-        a.remove();
-
-        URL.revokeObjectURL(a.href);
-
-       
-
-    }catch(err){
-
-        document.getElementById("loading").style.display = "none";
+    if(data.status != "QUEUED"){
 
         showDialog(
             "Export Failed",
-            err.message,
-            "❌"
+            data.message || data.status,
+            "❌",
+            null,
+            true
         );
-
+        return;
     }
+
+    checkExportJob(data.jobId, branch);
 
 }
 
@@ -1691,7 +1637,7 @@ else if(data.status == "OK"){
     
     catch(err){
 
-        document.getElementById("loading").style.display="none";
+        
 
         showDialog(
             "Error",
@@ -1856,6 +1802,92 @@ console.log(err);
 
 },3000);
 
+
+}
+
+
+ async function checkExportJob(jobId, branch){
+
+const jobBox=document.createElement("div");
+
+jobBox.className="jobFloat";
+
+jobBox.innerHTML=`
+<div class="jobIcon">⏳</div>
+
+<div style="flex:1">
+
+<span class="jobTitle">
+Inventory Export
+</span>
+
+<span class="jobBranch">
+Branch: ${branch}
+</span>
+
+<div class="jobStatus">
+Waiting in queue...
+</div>
+
+</div>
+`;
+
+document.getElementById("jobContainer").appendChild(jobBox);
+
+const icon=jobBox.querySelector(".jobIcon");
+const title=jobBox.querySelector(".jobTitle");
+const status=jobBox.querySelector(".jobStatus");
+
+const timer=setInterval(async()=>{
+
+const res=await fetch(
+API_URL+
+"?action=getJobStatus"+
+"&jobId="+encodeURIComponent(jobId)+
+getSessionParams()
+);
+
+const data=await res.json();
+
+if(data.jobStatus=="PENDING"){
+
+icon.innerHTML="⏳";
+status.innerHTML="Waiting in queue...";
+
+}
+
+if(data.jobStatus=="RUNNING"){
+
+icon.innerHTML="🔄";
+status.innerHTML="Preparing Excel...";
+
+}
+
+if(data.jobStatus=="DONE"){
+
+clearInterval(timer);
+
+icon.innerHTML="✅";
+title.innerHTML="Completed";
+status.innerHTML="Downloading...";
+
+window.open(data.result,"_blank");
+
+setTimeout(()=>jobBox.remove(),3000);
+
+}
+
+if(data.jobStatus=="FAILED"){
+
+clearInterval(timer);
+
+icon.innerHTML="❌";
+title.innerHTML="Failed";
+status.innerHTML="Export failed.";
+
+}
+
+},3000);
 
 }
  
