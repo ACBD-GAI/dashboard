@@ -520,7 +520,7 @@ const SESSION_KEY = "inventorySession";
  
 
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwtrNV4sa1XkhJDPaX94KtnMsGUZJnj3Gx99TBIykp_lBixzGYD8UqcnG0Lgj3tziEqvg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyV_abo3Snk4Jt2OK9uVeilS8Uz0mcfsboSIekPInv6JQri2UcxNEhBLeN3y1KOzIZAtQ/exec";
 let allRows = [];
 let currentPage = 1;
 const rowsPerPage = 20;
@@ -1472,6 +1472,7 @@ document.getElementById("prevBtn").onclick=function(){
 async function startExport(){
 
     const branch = document.getElementById("exportBranch").value;
+    const sheet  = document.getElementById("sheetSelect").value;
 
     if(!branch){
 
@@ -1482,61 +1483,93 @@ async function startExport(){
             null,
             true
         );
+
         return;
+
     }
 
     closeExportModal();
+
+    document.getElementById("loading").style.display = "flex";
 
     try{
 
         const res = await fetch(
 
-            API_URL +
-            "?action=queueExport" +
-            "&branch=" + encodeURIComponent(branch) +
+            API_URL+
+            "?action=export"+
+            "&branch="+encodeURIComponent(branch)+
+            "&sheet="+encodeURIComponent(sheet)+
             getSessionParams()
 
         );
 
-        const data = await res.json();
+       const base64 = await res.text();
 
-        if(data.status=="QUEUED"){
 
-            showDialog(
-                "Export Started",
-                "The export is now running in the background.",
-                "⏳",
-                null,
-                true
-            );
+if(
+  base64.startsWith("INVALID") ||
+  base64.startsWith("ERROR") ||
+  base64.startsWith("Exception")
+){
 
-            checkExportJob(data.jobId, branch);
+  alert(base64);
+  return;
 
-        }else{
+}
 
-            showDialog(
-                "Error",
-                data.message || data.status,
-                "❌",
-                null,
-                true
-            );
 
-        }
+document.getElementById("loading").style.display = "none";
+
+
+const bytes = Uint8Array.from(
+    atob(base64),
+    c => c.charCodeAt(0)
+);
+
+
+     
+        const blob = new Blob(
+            [bytes],
+            {
+                type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+        );
+
+        const a=document.createElement("a");
+
+        a.href=URL.createObjectURL(blob);
+
+        a.download=branch+"_"+sheet+".xlsx";
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+        URL.revokeObjectURL(a.href);
+
+        showDialog(
+            "Success",
+            "Export completed.",
+            "✅"
+        );
 
     }catch(err){
 
+        document.getElementById("loading").style.display = "none";
+
         showDialog(
-            "Error",
+            "Export Failed",
             err.message,
-            "❌",
-            null,
-            true
+            "❌"
         );
 
     }
 
 }
+
 
 function closeUpdateStockModal(){
 
@@ -1823,137 +1856,6 @@ console.log(err);
 
 },3000);
 
-
-}
-
-
- async function checkExportJob(jobId, branch){
-
-if(!jobId || !branch){
-    return;
-}
-
-const jobBox = document.createElement("div");
-
-jobBox.className="jobFloat";
-
-jobBox.innerHTML = `
-<div class="jobIcon">⏳</div>
-
-<div style="flex:1">
-
-<span class="jobTitle">
-Inventory Export
-</span>
-
-<span class="jobBranch">
-Branch: ${branch}
-</span>
-
-<div class="jobStatus">
-Waiting in queue...
-</div>
-
-</div>
-`;
-
-document.getElementById("jobContainer").appendChild(jobBox);
-
-const jobIcon =
-jobBox.querySelector(".jobIcon");
-
-const jobTitle =
-jobBox.querySelector(".jobTitle");
-
-const jobStatus =
-jobBox.querySelector(".jobStatus");
-
-const timer = setInterval(async ()=>{
-
-try{
-
-const res = await fetch(
-API_URL +
-"?action=getJobStatus" +
-"&jobId=" + encodeURIComponent(jobId) +
-getSessionParams()
-);
-
-const data = await res.json();
-
-console.log(data);
-
-if(data.jobStatus=="PENDING"){
-
-jobIcon.innerHTML="⏳";
-jobTitle.innerHTML="Inventory Export";
-jobStatus.innerHTML="Waiting in queue...";
-
-}
-
-if(data.jobStatus=="RUNNING"){
-
-jobIcon.innerHTML="🔄";
-jobTitle.innerHTML="Inventory Export";
-jobStatus.innerHTML="Generating Excel file...";
-
-}
-
-if(data.jobStatus=="DONE"){
-
-clearInterval(timer);
-
-jobIcon.innerHTML="✅";
-jobTitle.innerHTML="Completed";
-jobStatus.innerHTML="Downloading...";
-
-const bytes = Uint8Array.from(
-    atob(data.file),
-    c => c.charCodeAt(0)
-);
-
-const blob = new Blob(
-    [bytes],
-    {
-        type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    }
-);
-
-const a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download=branch+"_stocks.xlsx";
-document.body.appendChild(a);
-a.click();
-a.remove();
-URL.revokeObjectURL(a.href);
-
-setTimeout(()=>{
-    jobBox.remove();
-},5000);
-
-}
-
-if(data.jobStatus=="FAILED"){
-
-clearInterval(timer);
-
-jobIcon.innerHTML="❌";
-jobTitle.innerHTML="Failed";
-jobStatus.innerHTML="Export failed.";
-
-setTimeout(()=>{
-    jobBox.remove();
-},8000);
-
-}
-
-}catch(err){
-
-console.log(err);
-
-}
-
-},3000);
 
 }
  
