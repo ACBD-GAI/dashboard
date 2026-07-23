@@ -1339,17 +1339,13 @@ function closeDialog(){
 
     console.log("OK BUTTON CLICKED");
 
-    if(dialogCallback){
+    const fn = dialogCallback;
+    dialogCallback = null;
 
-        const fn = dialogCallback;
-        dialogCallback = null;
+    closeDialog();   // CLOSE FIRST
 
-        await fn();
-
-    }else{
-
-closeDialog();        
-
+    if(fn){
+        await fn();  // THEN RUN ACTION
     }
 
 }
