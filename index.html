@@ -1161,21 +1161,24 @@ async function deleteItem(branch,row){
 
      console.log("SERVER RETURNED:", data);
 
-                if(data.status=="OK"){
+               if(data.status=="OK"){
 
-                    closeDialog();
+    closeDialog();
 
-                    await loadDashboard();
+    showDialog(
+        "Deleted",
+        "Record deleted successfully.",
+        "✅",
+        null,
+        true
+    );
 
-                    showDialog(
-                        "Deleted",
-                        "Record deleted successfully.",
-                        "✅",
-                        null,
-                        true
-                    );
+    // reload dashboard in background
+    loadDashboard();
 
-                }else{
+}
+               
+               else{
 
                     closeDialog();
 
