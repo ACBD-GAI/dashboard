@@ -1804,12 +1804,24 @@ jobTitle.innerHTML="Completed";
 jobStatus.innerHTML="Import finished successfully.";
 
 
-setTimeout(()=>{
+const closeBtn = document.createElement("div");
 
+closeBtn.innerHTML = "✕";
+
+closeBtn.style.position = "absolute";
+closeBtn.style.top = "4px";
+closeBtn.style.right = "8px";
+closeBtn.style.cursor = "pointer";
+closeBtn.style.fontWeight = "bold";
+closeBtn.style.fontSize = "16px";
+closeBtn.style.color = "#666";
+
+closeBtn.onclick = function () {
     jobBox.remove();
+};
 
-},5000);
-
+jobBox.style.position = "relative";
+jobBox.appendChild(closeBtn);
 
 
 }
