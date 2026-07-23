@@ -1871,7 +1871,12 @@ icon.innerHTML="✅";
 title.innerHTML="Completed";
 status.innerHTML="Downloading...";
 
-window.open(data.result,"_blank");
+const a = document.createElement("a");
+a.href = data.result;
+a.download = "";
+document.body.appendChild(a);
+a.click();
+a.remove();
 
 setTimeout(()=>jobBox.remove(),3000);
 
