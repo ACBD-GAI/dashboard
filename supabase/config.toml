@@ -1,0 +1,37 @@
+project_id = "acebedo-inventory-local"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173/auth/callback"]
+enable_signup = false
+
+[storage]
+enabled = true
+file_size_limit = "20MiB"
+
+[functions.process-import]
+verify_jwt = true
+
+[functions.process-export]
+verify_jwt = true
+
+[functions.clear-report]
+verify_jwt = true
+
+[functions.migrate-legacy-inventory]
+verify_jwt = true

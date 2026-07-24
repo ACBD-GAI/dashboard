@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+ 
+
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INV DASHBOARD</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#333}
+.header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:linear-gradient(135deg,#2196f3,#1976d2);color:#fff;position:sticky;top:0;z-index:1000}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-left img{width:48px;height:48px;border-radius:10px;background:#fff;padding:4px}
+.header-right{display:flex;gap:10px;flex-wrap:wrap}
+.header button{padding:10px 14px;border:none;border-radius:10px;background:#fff;color:#1976d2;font-weight:bold;cursor:pointer}
+.container{padding:20px}
+.filters{display:grid;grid-template-columns:220px 220px 1fr 140px;gap:15px;align-items:end;background:#fff;padding:18px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.field{display:flex;flex-direction:column}
+label{font-weight:bold;margin-bottom:6px}
+select,input{padding:12px;border:1px solid #ccc;border-radius:10px;font-size:15px}
+#searchBtn{padding:12px;border:none;border-radius:10px;background:#2196f3;color:#fff;font-weight:bold;cursor:pointer}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:20px 0}
+.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center;border-left:6px solid #2196f3}
+.card h3{margin:0;color:#666;font-size:16px}.card h1{margin:10px 0 0;font-size:34px;color:#1976d2}
+.table-container{background:#fff;border-radius:16px;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+table{width:100%;border-collapse:collapse}
+th{background:#1976d2;color:#fff;padding:12px;text-align:left;position:sticky;top:0}
+td{padding:12px;border-bottom:1px solid #eee}
+tr:hover{background:#f5faff}
+.pagination{display:flex;justify-content:center;align-items:center;gap:15px;margin:20px 0}
+.pagination button{padding:10px 18px;border:none;border-radius:10px;background:#2196f3;color:#fff;cursor:pointer}
+#loading{position:fixed;inset:0;background:rgba(255,255,255,.8);display:flex;flex-direction:column;justify-content:center;align-items:center}
+.loader{width:50px;height:50px;border:5px solid #ddd;border-top:5px solid #2196f3;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){
+.filters{grid-template-columns:1fr}
+.summary{grid-template-columns:1fr 1fr}
+.header{flex-direction:column;gap:10px}
+.header-right{justify-content:center}
+}
+@media(max-width:600px){
+.summary{grid-template-columns:1fr}
+th,td{font-size:13px}
+}
+
+
+.header button,
+#searchBtn,
+#verifyBtn,
+button {
+    transition: all .2s ease;
+}
+
+.header button:hover,
+#searchBtn:hover,
+#verifyBtn:hover,
+button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 18px rgba(0,0,0,.18);
+    filter:brightness(1.05);
+}
+
+.header button:active,
+#searchBtn:active,
+#verifyBtn:active,
+button:active{
+    transform:scale(.97);
+}
+
+.customDialog{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+justify-content:center;
+align-items:center;
+z-index:1000001;
+}
+
+
+.dialogBox{
+
+background:white;
+width:380px;
+padding:30px;
+border-radius:20px;
+box-shadow:0 20px 50px rgba(0,0,0,.25);
+text-align:center;
+animation:popup .2s ease;
+
+}
+
+
+.dialogIcon{
+
+font-size:45px;
+margin-bottom:15px;
+
+}
+
+
+.dialogTitle{
+
+font-size:22px;
+font-weight:bold;
+margin-bottom:10px;
+
+}
+
+
+.dialogMessage{
+
+color:#666;
+margin-bottom:25px;
+
+}
+
+
+.dialogButtons{
+
+display:flex;
+justify-content:center;
+gap:15px;
+
+}
+
+
+.dialogBtn{
+
+padding:12px 25px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+
+}
+
+
+.dialogOK{
+
+background:#2196f3;
+color:white;
+
+}
+
+
+.dialogCancel{
+
+background:#eee;
+
+}
+
+
+@keyframes popup{
+
+from{
+transform:scale(.8);
+opacity:0;
+}
+
+to{
+transform:scale(1);
+opacity:1;
+}
+
+}
+
+
+ #jobFloat{
+
+display:none;
+position:fixed;
+top:80px;
+left:20px;
+
+background:white;
+padding:12px 18px;
+
+border-radius:12px;
+
+box-shadow:0 5px 20px rgba(0,0,0,.25);
+
+z-index:999999;
+
+display:none;
+align-items:center;
+gap:12px;
+
+font-size:14px;
+
+}
+
+#jobIcon{
+
+font-size:25px;
+
+}
+
+#jobTitle{
+
+color:#1976d2;
+
+}
+
+#jobBranch{
+
+color:#666;
+
+}
+
+
+#jobContainer{
+    position:fixed;
+    top:10px;
+    left:10px;
+
+    width:auto;
+
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+
+    z-index:999999;
+    pointer-events:none;
+}
+
+.jobFloat{
+    min-width:150px;
+    max-width:180px;
+
+    padding:6px 10px;
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    background:rgba(255,255,255,.35);   /* Transparent */
+    backdrop-filter:blur(8px);          /* Glass effect */
+    -webkit-backdrop-filter:blur(8px);
+
+    border:1px solid rgba(255,255,255,.35);
+    border-left:3px solid #2196f3;
+
+    border-radius:8px;
+
+    box-shadow:0 3px 10px rgba(0,0,0,.12);
+
+    animation:slideIn .2s ease;
+
+    pointer-events:auto;
+}
+
+.jobIcon{
+    font-size:16px;
+    width:18px;
+    flex-shrink:0;
+}
+
+.jobTitle{
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    line-height:1.2;
+}
+
+.jobBranch,
+.jobStatus{
+    display:block;
+    font-size:10px;
+    color:#555;
+    line-height:1.2;
+}
+@keyframes slideIn{
+
+from{
+    transform:translateX(40px);
+    opacity:0;
+}
+
+to{
+    transform:translateX(0);
+    opacity:1;
+}
+
+} 
+
+  
+</style>
+ </head>
+  
+<body>
+ <div id="loginScreen" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#eef2f7;
+display:none;
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+<div style="
+background:white;
+padding:40px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+text-align:center;
+width:340px;
+">
+
+<h2>🔐 ADMIN LOGIN</h2>
+
+<p>Dashboard Access</p>
+
+<input
+id="email"
+type="email"
+placeholder="Enter Gmail"
+style="
+width:100%;
+padding:14px;
+margin-bottom:15px;
+border-radius:10px;
+border:1px solid #ccc;
+">
+
+<button
+style="
+width:100%;
+padding:14px;
+background:#2196f3;
+color:white;
+border:none;
+border-radius:10px;
+font-weight:bold;
+"
+onclick="sendOTP()">
+SEND OTP
+</button>
+
+<input
+id="otp"
+placeholder="Enter OTP"
+style="
+display:none;
+width:100%;
+padding:14px;
+margin-top:15px;
+border-radius:10px;
+border:1px solid #ccc;
+">
+
+<button
+id="verifyBtn"
+style="
+display:none;
+width:100%;
+padding:14px;
+margin-top:15px;
+background:#2196f3;
+color:white;
+border:none;
+border-radius:10px;
+font-weight:bold;
+"
+onclick="verifyOTP()">
+VERIFY OTP
+</button>
+
+<p id="loginStatus"></p>
+
+</div>
+
+ </div>
+ 
+  
+
+<div id="app" style="display:none;">
+
+<header class="header">
+  <div class="header-left">
+    <img src="https://drive.google.com/thumbnail?id=1U9kmQ7qummOCpVppdLtmVaugMuzLYUWQ&sz=w200">
+    <div>
+      <h2>ACEBEDO OPTICAL INVENTORY</h2>
+      <small>Central Inventory Management</small>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <button id="refreshBtn">🔄 Refresh</button>
+    <button id="updateStockBtn">📤 Update Stocks</button>
+   <button id="clearBtn">🗑 Clear Report</button>
+    <button id="exportBtn">📥 Export</button>
+    <button id="logoutBtn">Logout</button>
+</div>
+</header>
+
+<main class="container">
+
+<section class="filters">
+
+<div class="field">
+<label>Branch</label>
+<select id="branchSelect">
+<option value="ALL">🌐 Select Branch</option>
+<option value="GAI">🏢 Gaisano Iloilo</option>
+<option value="CAS">🏢 Casa Plaza</option>
+<option value="BAC">🏢 Bacolod</option>
+</select>
+</div>
+
+<div class="field">
+<label>Select Report</label>
+<select id="sheetSelect">
+<option value="stocks">📦 Stocks</option>
+<option value="SCANRESULTS">💰 Sold Out</option>
+<option value="AUDIT">🔄 Re-Inventory</option>
+</select>
+</div>
+
+<div class="field search">
+<label>Search</label>
+<input id="searchBox" placeholder="Tag, SI, Description">
+</div>
+
+<button id="searchBtn">🔍 Search</button>
+
+</section>
+
+<section class="summary">
+
+
+
+<div class="card">
+<h3>Available</h3>
+<h1 id="availableCount">0</h1>
+</div>
+
+<div class="card">
+<h3>Sold Out</h3>
+<h1 id="soldCount">0</h1>
+</div>
+
+<div class="card">
+<h3>Audited</h3>
+<h1 id="auditCount">0</h1>
+</div>
+
+<div class="card">
+<h3>Showing</h3>
+<h1 id="showingCount">0</h1>
+</div>
+
+</section>
+
+<section class="table-container">
+
+<table id="resultTable">
+
+<thead>
+<tr>
+<th>Branch</th>
+<th>Lenstype</th>
+<th>Description</th>
+<th>Tag</th>
+<th>SI</th>
+<th>Date</th>
+<th>Actions</th>
+</tr>
+</thead>
+ 
+<tbody id="tableBody">
+
+<tr>
+<td colspan="7" style="text-align:center;padding:40px;">
+No data loaded.
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<div class="pagination">
+<button id="prevBtn">◀ Previous</button>
+<span id="pageInfo">Page 1</span>
+<button id="nextBtn">Next ▶</button>
+</div>
+
+</main>
+
+<div id="loading" style="display:none">
+<div class="loader"></div>
+<p>Loading data...</p>
+</div>
+
+
+
+</div>
+
+  
+<SCRIPT>
+
+
+const BRANCH = "DASHBOARD";
+const SESSION_KEY = "inventorySession";
+ 
+
+
+const API_URL = "https://script.google.com/macros/s/AKfycbxR1B1C42QJXoEZqQchyBnlirE7KXYap6bQC91gnOM9MKTOxNhrMgx1jXkbaMMDA2YIag/exec";
+let allRows = [];
+let currentPage = 1;
+const rowsPerPage = 20;
+
+ 
+ 
+ console.log("SCRIPT STARTED");
+window.onerror=function(msg,url,line,col,error){
+    console.log("JS ERROR:",msg,"LINE:",line);
+};
+ 
+
+
+/* ================= LOGIN ================= */
+
+async function sendOTP(){
+
+    const email=document.getElementById("email").value.trim();
+ const status = document.getElementById("loginStatus");
+
+    if(!email){
+       
+status.style.color="#dc3545";
+status.innerHTML="❌ Enter your Gmail.";
+return;
+     
+    }
+
+
+    try{
+
+        const url =
+        API_URL+
+        "?action=sendOTP&email="+encodeURIComponent(email);
+
+
+    
+
+status.style.color = "#1976d2";
+status.innerHTML = "⏳ Sending OTP...";
+
+
+        const res = await fetch(url);
+
+
+      const text = await res.text();
+console.log("SEND OTP:", text);
+
+let data;
+try{
+    data = JSON.parse(text);
+}catch(e){
+    status.style.color="#dc3545";
+    status.innerHTML="❌ Server returned invalid response.";
+    console.error(text);
+    return;
+}
+
+
+
+        if(data.status==="OTP_SENT"){
+
+
+
+
+status.style.color = "#28a745";
+status.innerHTML = "✅ OTP sent. Please check your Gmail.";
+
+
+            document.getElementById("otp").style.display="block";
+
+
+            document.getElementById("verifyBtn").style.display="block";
+
+
+            document.getElementById("otp").focus();
+
+
+        }
+        else if(data.status==="EMAIL_DENIED"){
+
+
+         
+
+status.style.color = "#dc3545";
+status.innerHTML = "❌ This Gmail is not authorized.";
+
+        }
+       else{
+
+console.log("OTP ERROR:",data);
+
+status.style.color = "#dc3545";
+status.innerHTML =
+"❌ " + JSON.stringify(data);
+
+}
+
+
+    }
+    catch(err){
+
+    
+status.style.color="#dc3545";
+status.innerHTML="❌ Unable to connect to server.";
+console.error(err);
+    }
+
+}
+async function verifyOTP(){
+
+    const verifyBtn=document.getElementById("verifyBtn");
+    const status=document.getElementById("loginStatus");
+
+    try{
+
+        verifyBtn.disabled=true;
+        verifyBtn.textContent="VERIFYING...";
+
+        status.style.color="#1976d2";
+        status.innerHTML="⏳ Verifying OTP...";
+
+        const email=document.getElementById("email").value.trim();
+        const otp=document.getElementById("otp").value.trim();
+
+        const res=await fetch(
+            API_URL+
+            "?action=verifyOTP"+
+            "&email="+encodeURIComponent(email)+
+            "&otp="+encodeURIComponent(otp)
+        );
+
+      const text = await res.text();
+console.log(text);
+
+const data = JSON.parse(text);
+
+        verifyBtn.disabled=false;
+        verifyBtn.textContent="VERIFY OTP";
+
+        if(data.status==="OK"){
+
+            status.style.color="#28a745";
+            status.innerHTML="✅ Login successful.";
+
+            localStorage.setItem(
+                SESSION_KEY,
+                JSON.stringify({
+                    email:email,
+                    sessionId:data.sessionId
+                })
+            );
+
+            localStorage.setItem("loginTime",Date.now());
+
+            document.getElementById("loginScreen").style.display="none";
+            document.getElementById("app").style.display="block";
+
+            resetDashboard();
+
+        }else{
+
+            status.style.color="#dc3545";
+            status.innerHTML="❌ Invalid or expired OTP.";
+
+        }
+
+    }catch(err){
+
+        verifyBtn.disabled=false;
+        verifyBtn.textContent="VERIFY OTP";
+
+        status.style.color="#dc3545";
+        status.innerHTML="❌ Unable to connect to server.";
+
+        console.error(err);
+
+    }
+
+}
+
+async function logout(){
+
+  const session =
+JSON.parse(
+    localStorage.getItem(SESSION_KEY)
+    || "{}"
+);
+
+    try{
+
+        await fetch(
+            API_URL+
+            "?action=logout"+
+            "&email="+encodeURIComponent(session.email||"")+
+            "&sessionId="+encodeURIComponent(session.sessionId||"")
+        );
+
+    }catch(e){}
+
+    localStorage.removeItem(SESSION_KEY);
+localStorage.removeItem("loginTime");
+
+location.reload();
+
+}
+
+function getSessionParams(){
+
+    const session =
+    JSON.parse(
+        localStorage.getItem(SESSION_KEY)
+        || "{}"
+    );
+
+    return (
+        "&email=" + encodeURIComponent(session.email || "") +
+        "&sessionId=" + encodeURIComponent(session.sessionId || "")
+    );
+
+}
+
+function checkLoginExpiry(){
+
+    const loginTime=
+    Number(localStorage.getItem("loginTime")||0);
+
+    if(!loginTime)return;
+
+    const thirteenHours=
+    13*60*60*1000;
+
+    if(Date.now()-loginTime>thirteenHours){
+
+        localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem("loginTime");
+
+       document.getElementById("loginStatus").style.color="#dc3545";
+document.getElementById("loginStatus").innerHTML="❌ Session expired.";
+
+location.reload();
+
+     
+
+    }
+
+}
+
+window.addEventListener("DOMContentLoaded",async()=>{
+
+    checkLoginExpiry();
+
+  const session =
+JSON.parse(
+    localStorage.getItem(SESSION_KEY)
+    || "{}"
+);
+
+    if(!session.email){
+
+        document.getElementById("loginScreen").style.display="flex";
+        document.getElementById("app").style.display="none";
+
+        return;
+
+    }
+
+    try{
+
+        const res=await fetch(
+            API_URL+
+            "?action=checkSession"+
+            "&email="+encodeURIComponent(session.email)+
+            "&sessionId="+encodeURIComponent(session.sessionId)
+        );
+
+        const text = await res.text();
+
+console.log("CHECK SESSION RESPONSE:",text);
+
+const data = JSON.parse(text);
+
+        if(data.status==="VALID"){
+
+            document.getElementById("loginScreen").style.display="none";
+            document.getElementById("app").style.display="block";
+
+            resetDashboard();
+
+        }else{
+
+            localStorage.removeItem(SESSION_KEY);
+            localStorage.removeItem("loginTime");
+
+            document.getElementById("loginScreen").style.display="flex";
+            document.getElementById("app").style.display="none";
+
+        }
+
+    }
+    catch(e){
+
+    console.error("SESSION ERROR:",e);
+
+    
+
+    document.getElementById("loginScreen").style.display="flex";
+    document.getElementById("app").style.display="none";
+
+}
+
+});
+
+document.getElementById("logoutBtn").onclick=logout;
+
+document.getElementById("email").addEventListener("keydown",e=>{
+    if(e.key==="Enter")sendOTP();
+});
+
+document.getElementById("otp").addEventListener("keydown",e=>{
+    if(e.key==="Enter")verifyOTP();
+});
+
+/* ================= DASHBOARD ================= */
+
+function resetDashboard(){
+
+    
+    document.getElementById("soldCount").textContent = "0";
+    document.getElementById("auditCount").textContent = "0";
+    document.getElementById("showingCount").textContent = "0";
+
+    document.getElementById("tableBody").innerHTML = `
+    <tr>
+        <td colspan="7" style="text-align:center;padding:40px;">
+            Click SEARCH to load data.
+        </td>
+    </tr>`;
+
+}
+
+ 
+
+async function loadDashboard(){
+
+    const branch =
+    document.getElementById("branchSelect").value;
+
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+    document.getElementById("loading").style.display="flex";
+
+    try{
+
+
+
+const search =
+document.getElementById("searchBox").value.trim();
+
+
+const url =
+API_URL+
+"?action=summary"+
+"&branch="+encodeURIComponent(branch)+
+"&sheet="+encodeURIComponent(sheet)+
+"&search="+encodeURIComponent(search)+
+"&load=1"+
+getSessionParams();
+
+console.log("REQUEST URL:", url);
+
+const res = await fetch(url);
+
+        const text = await res.text();
+
+        console.log("SERVER RESPONSE:", text);
+
+        const data = JSON.parse(text);
+
+
+        if(data.status !== "OK"){
+
+            console.error(data.message || "Server error");
+
+            return;
+        }
+
+
+     allRows = data.data;
+currentPage = 1;
+renderTable();
+
+
+   
+
+document.getElementById("availableCount").textContent =
+    data.availableTotal;
+
+document.getElementById("soldCount").textContent =
+    data.soldTotal;
+
+document.getElementById("auditCount").textContent =
+    data.auditTotal;
+
+document.getElementById("showingCount").textContent =
+    allRows.length;
+
+
+    }catch(err){
+
+        console.error("DASHBOARD ERROR:",err);
+
+      console.error(err);
+     
+    }
+    
+    
+    
+    finally{
+
+     document.getElementById("loading").style.display = "none";
+
+        
+
+    }
+
+}
+
+function renderTable(){
+
+    const body = document.getElementById("tableBody");
+
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+    if(allRows.length===0){
+
+        body.innerHTML=`
+        <tr>
+        <td colspan="7" style="text-align:center;padding:40px">
+        No data found.
+        </td>
+        </tr>`;
+
+        document.getElementById("pageInfo").textContent="Page 0 / 0";
+        return;
+
+    }
+
+    const totalPages =
+    Math.ceil(allRows.length / rowsPerPage);
+
+    if(currentPage<1) currentPage=1;
+    if(currentPage>totalPages) currentPage=totalPages;
+
+    const start =
+    (currentPage-1)*rowsPerPage;
+
+    const end =
+    start+rowsPerPage;
+
+    const rows =
+    allRows.slice(start,end);
+
+    body.innerHTML = rows.map((r)=>`
+
+<tr>
+
+<td>${r.branch}</td>
+<td>${r.lenstype}</td>
+<td>${r.description}</td>
+<td>${r.tag}</td>
+<td>${r.si}</td>
+<td>${r.date}</td>
+
+<td>
+
+${sheet=="SCANRESULTS"
+?
+`
+<button class="editBtn"
+onclick="editItem('${r.branch}',${r.row},'${r.si}')">
+✏ Edit SI
+</button>
+
+<button class="deleteBtn"
+onclick="deleteItem('${r.branch}',${r.row})">
+🗑 Delete
+</button>
+`
+:
+"-"
+}
+
+</td>
+
+</tr>
+
+`).join("");
+
+    document.getElementById("pageInfo").textContent =
+    "Page " + currentPage + " / " + totalPages;
+
+}
+
+// BUTTON EVENTS
+
+// BUTTON EVENTS
+
+ document.getElementById("updateStockBtn").onclick = function(){
+
+    document.getElementById("updateBranch").value = "";
+    document.getElementById("stockFile").value = "";
+
+    document.getElementById("updateStockModal").style.display = "flex";
+
+  
+
+};
+
+ document.getElementById("clearBtn").onclick = function(){
+
+    document.getElementById("clearBranch").value = "";
+    document.getElementById("clearSheet").value = "";
+
+    document.getElementById("clearModal").style.display = "flex";
+
+};
+
+document.getElementById("searchBtn").onclick = loadDashboard;
+
+document.getElementById("refreshBtn").onclick = loadDashboard;
+
+document.getElementById("exportBtn").onclick=function(){
+
+    document.getElementById("exportBranch").value="";
+
+    document.getElementById("exportModal").style.display="flex";
+
+};
+
+
+// Branch and Sheet changes DO NOT LOAD DATA
+document.getElementById("branchSelect").onchange = function(){
+
+console.log("Branch changed. Click SEARCH.");
+
+};
+
+
+document.getElementById("sheetSelect").onchange = function(){
+
+console.log("Sheet changed. Click SEARCH.");
+
+};
+
+
+// ENTER key still performs SEARCH
+document.getElementById("searchBox")
+.addEventListener("keydown",function(e){
+
+if(e.key==="Enter"){
+
+loadDashboard();
+
+}
+
+});
+
+
+async function editItem(branch,row,si){
+
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+
+    if(sheet !== "SCANRESULTS"){
+
+        showDialog(
+            "Not Allowed",
+            "Edit is only available for SOLD OUT records.",
+            "⚠️"
+        );
+
+        return;
+
+    }
+
+
+    document.getElementById("editBranch").value = branch;
+
+    document.getElementById("editRow").value = row;
+
+    document.getElementById("editSI").value = si || "";
+
+
+    document.getElementById("editModal").style.display="flex";
+
+
+}
+
+
+
+
+async function deleteItem(branch,row){
+
+ 
+
+    console.log("deleteItem() called");
+    console.log("branch =", branch);
+    console.log("row =", row);
+
+    const sheet = document.getElementById("sheetSelect").value;
+
+    showDialog(
+        "Delete Record?",
+        "Are you sure you want to permanently delete this item?",
+        "🗑️",
+        async function(){
+
+            console.log("DELETE CALLBACK STARTED");
+
+    try{
+
+        console.log("SENDING REQUEST");
+
+        const res = await fetch(
+
+                    API_URL+
+                    "?action=deleteRecord"+
+                    "&branch="+encodeURIComponent(branch)+
+                    "&sheet="+encodeURIComponent(sheet)+
+                    "&row="+row+
+                    getSessionParams()
+
+                );
+
+                const data = await res.json();
+
+     console.log("SERVER RETURNED:", data);
+
+if(data.status=="OK"){
+
+    closeDialog();
+
+    await loadDashboard();
+
+    showDialog(
+        "Deleted",
+        "Record deleted successfully.",
+        "✅",
+        null,
+        true
+    );
+
+}
+               
+               else{
+
+                    closeDialog();
+
+                    showDialog(
+                        "Error",
+                        data.message,
+                        "❌",
+                        null,
+                        true
+                    );
+
+                }
+
+            }catch(err){
+
+                closeDialog();
+
+                showDialog(
+                    "Error",
+                    err.message,
+                    "❌",
+                    null,
+                    true
+                );
+
+            }
+
+        }
+
+    );
+
+}
+function closeEditModal(){
+
+    document.getElementById("editModal").style.display="none";
+
+}
+
+async function saveEdit(){
+
+    const branch =
+    document.getElementById("editBranch").value;
+
+    const row =
+    document.getElementById("editRow").value;
+
+    const sheet =
+    document.getElementById("sheetSelect").value;
+
+
+    // ONLY ALLOW SOLD OUT EDITING
+    if(sheet !== "SCANRESULTS"){
+
+        showDialog(
+"Not Allowed",
+"SI editing is only available for SOLD OUT records.",
+"⚠️"
+);
+
+        return;
+    }
+
+
+    const si =
+    document.getElementById("editSI").value.trim();
+
+
+    const res = await fetch(
+
+        API_URL+
+    "?action=updateSI"+
+"&branch="+encodeURIComponent(branch)+
+"&sheet="+encodeURIComponent(sheet)+
+"&row="+row+
+"&si="+encodeURIComponent(si)+
+getSessionParams()
+
+    );
+
+
+    const data = await res.json();
+
+
+if(data.status=="OK"){
+
+    closeEditModal();
+
+    await loadDashboard();
+
+    showDialog(
+        "Updated",
+        "SI number updated successfully.",
+        "✅",
+        null,
+        true
+    );
+
+}
+else{
+
+        showDialog(
+"Error",
+data.message,
+"❌"
+);
+
+    }
+
+}
+
+
+ 
+ 
+
+  
+  
+
+let dialogCallback=null;
+
+
+function showDialog(title,message,icon="⚠️",callback=null,onlyOK=false){
+
+document.getElementById("dialogTitle").innerHTML=title;
+
+document.getElementById("dialogMessage").innerHTML=message;
+
+document.getElementById("dialogIcon").innerHTML=icon;
+
+
+dialogCallback=callback;
+
+
+// hide cancel button if message only
+if(onlyOK){
+
+document.querySelector(".dialogCancel").style.display="none";
+
+}else{
+
+document.querySelector(".dialogCancel").style.display="block";
+
+}
+
+
+document.getElementById("dialog").style.display="flex";
+
+}
+
+function closeDialog(){
+
+    document.getElementById("dialog").style.display="none";
+
+}
+
+
+
+ async function dialogOKClick(){
+
+    console.log("OK BUTTON CLICKED");
+
+    const fn = dialogCallback;
+    dialogCallback = null;
+
+    closeDialog();   // CLOSE FIRST
+
+    if(fn){
+        await fn();  // THEN RUN ACTION
+    }
+
+}
+
+
+ document.getElementById("nextBtn").onclick=function(){
+
+    const totalPages =
+    Math.ceil(allRows.length/rowsPerPage);
+
+    if(currentPage<totalPages){
+
+        currentPage++;
+
+        renderTable();
+
+    }
+
+};
+
+document.getElementById("prevBtn").onclick=function(){
+
+    if(currentPage>1){
+
+        currentPage--;
+
+        renderTable();
+
+    }
+
+};
+
+ function closeExportModal(){
+
+    document.getElementById("exportModal").style.display="none";
+
+}
+
+ function closeClearModal(){
+
+    document.getElementById("clearModal").style.display = "none";
+
+}
+
+ async function clearReport(){
+
+    const branch = document.getElementById("clearBranch").value;
+    const sheet = document.getElementById("clearSheet").value;
+
+    if(!branch){
+
+        showDialog(
+            "Branch Required",
+            "Please select a branch.",
+            "⚠️",
+            null,
+            true
+        );
+
+        return;
+
+    }
+
+    if(!sheet){
+
+        showDialog(
+            "Report Required",
+            "Please select a report.",
+            "⚠️",
+            null,
+            true
+        );
+
+        return;
+
+    }
+
+   showDialog(
+    "Confirm Clear",
+    "This will permanently clear all data of the selected report.\n\nContinue?",
+    "⚠️",
+    async function(){
+
+        closeDialog();          // <-- ADD THIS
+        closeClearModal();
+
+        const res = await fetch(
+            API_URL +
+            "?action=clearSheet" +
+            "&branch=" + encodeURIComponent(branch) +
+            "&sheet=" + encodeURIComponent(sheet) +
+            getSessionParams()
+        );
+
+        const data = await res.json();
+
+        if(data.status=="OK"){
+
+            showDialog(
+                "Success",
+                "Report cleared successfully.",
+                "✅",
+                null,
+                true
+            );
+
+        }else{
+
+            showDialog(
+                "Error",
+                data.message,
+                "❌",
+                null,
+                true
+            );
+
+        }
+
+    }
+);
+  
+ }
+async function startExport(){
+
+    const branch = document.getElementById("exportBranch").value;
+
+    if(!branch){
+
+        showDialog(
+            "Branch Required",
+            "Please select a branch.",
+            "⚠️",
+            null,
+            true
+        );
+        return;
+    }
+
+    closeExportModal();
+
+    const res = await fetch(
+        API_URL +
+        "?action=export" +
+        "&branch=" + encodeURIComponent(branch) +
+        getSessionParams()
+    );
+
+    const data = await res.json();
+
+    if(data.status != "QUEUED"){
+
+        showDialog(
+            "Export Failed",
+            data.message || data.status,
+            "❌",
+            null,
+            true
+        );
+        return;
+    }
+
+    checkExportJob(data.jobId, branch);
+
+}
+
+
+function closeUpdateStockModal(){
+
+    document.getElementById("updateStockModal").style.display = "none";
+
+}
+
+
+ 
+
+async function updateStocks(){
+
+    console.log("=== updateStocks() START ===");
+
+    const branch = document.getElementById("updateBranch").value;
+    const file = document.getElementById("stockFile").files[0];
+
+    console.log("Branch:", branch);
+    console.log("File:", file);
+
+   if(!branch){
+    showDialog(
+        "Branch Required",
+        "Please select a branch.",
+        "⚠️",
+        null,
+        true
+    );
+    return;
+}
+
+if(!file){
+    showDialog(
+        "No File",
+        "Please select an Excel file.",
+        "⚠️",
+        null,
+        true
+    );
+    return;
+}
+
+closeUpdateStockModal();
+
+    
+
+    try{
+
+        const buffer = await file.arrayBuffer();
+
+        let binary = "";
+
+        const bytes = new Uint8Array(buffer);
+
+        const chunk = 0x8000;
+
+        for(let i=0;i<bytes.length;i+=chunk){
+
+            binary += String.fromCharCode.apply(
+                null,
+                bytes.subarray(i,i+chunk)
+            );
+
+        }
+
+        const base64 = btoa(binary);
+
+const session = JSON.parse(localStorage.getItem(SESSION_KEY) || "{}");
+
+const form = new FormData();
+
+form.append("action", "uploadStock");
+form.append("branch", branch);
+form.append("fileName", file.name);
+form.append("file", base64);
+form.append("email", session.email);
+form.append("sessionId", session.sessionId);
+
+const res = await fetch(API_URL, {
+    method: "POST",
+    body: form
+});
+
+        const text = await res.text();
+
+console.log("SERVER RESPONSE:");
+console.log(text);
+
+const data = JSON.parse(text);
+
+
+
+if(data.status == "QUEUED"){
+
+    closeUpdateStockModal();
+
+    checkImportJob(data.jobId, branch);
+
+}
+
+else if(data.status == "OK"){
+
+    closeUpdateStockModal();
+
+    showDialog(
+        "Success",
+        "Items updated successfully.\n\nRows Imported: " + data.rows,
+        "✅",
+        null,
+        true
+    );
+
+}else{
+
+    showDialog(
+        "Error",
+        data.message || data.status,
+        "❌",
+        null,
+        true
+    );
+
+}    
+    }
+    
+    catch(err){
+
+        
+
+        showDialog(
+            "Error",
+            err.message,
+            "❌",
+            null,
+            true
+        );
+
+    }
+
+}
+
+async function checkImportJob(jobId, branch){
+
+if(!jobId || !branch){
+    return;
+}
+
+const jobBox = document.createElement("div");
+
+jobBox.className="jobFloat";
+
+jobBox.innerHTML = `
+<div class="jobIcon">⏳</div>
+
+<div style="flex:1">
+
+<span class="jobTitle">
+Inventory Import
+</span>
+
+<span class="jobBranch">
+Branch: ${branch}
+</span>
+
+<div class="jobStatus">
+Waiting in queue...
+</div>
+
+</div>
+`;
+
+document.getElementById("jobContainer").appendChild(jobBox);
+
+
+const jobIcon =
+jobBox.querySelector(".jobIcon");
+
+const jobTitle =
+jobBox.querySelector(".jobTitle");
+ const jobStatus =
+jobBox.querySelector(".jobStatus");
+
+
+const timer = setInterval(async ()=>{
+
+
+try{
+
+
+const res = await fetch(
+API_URL +
+"?action=getJobStatus" +
+"&jobId=" + encodeURIComponent(jobId) +
+getSessionParams()
+);
+
+
+const data = await res.json();
+
+
+console.log(data);
+
+
+
+if(data.jobStatus=="PENDING"){
+
+jobIcon.innerHTML="⏳";
+jobTitle.innerHTML="Inventory Import";
+jobStatus.innerHTML="Waiting in queue...";
+
+}
+
+
+
+if(data.jobStatus=="RUNNING"){
+
+jobIcon.innerHTML="🔄";
+jobTitle.innerHTML="Inventory Import";
+jobStatus.innerHTML="Importing stock file...";
+
+}
+
+
+
+if(data.jobStatus=="DONE"){
+
+
+clearInterval(timer);
+
+
+jobIcon.innerHTML="✅";
+
+jobTitle.innerHTML="Completed";
+jobStatus.innerHTML="Import finished successfully.";
+
+
+const closeBtn = document.createElement("div");
+
+closeBtn.innerHTML = "✕";
+
+closeBtn.style.position = "absolute";
+closeBtn.style.top = "4px";
+closeBtn.style.right = "8px";
+closeBtn.style.cursor = "pointer";
+closeBtn.style.fontWeight = "bold";
+closeBtn.style.fontSize = "16px";
+closeBtn.style.color = "#666";
+
+closeBtn.onclick = function () {
+    jobBox.remove();
+};
+
+jobBox.style.position = "relative";
+jobBox.appendChild(closeBtn);
+
+
+}
+
+
+if(data.jobStatus=="FAILED"){
+
+
+clearInterval(timer);
+
+
+jobIcon.innerHTML="❌";
+
+jobTitle.innerHTML="Failed";
+jobStatus.innerHTML="Unable to import file.";
+
+
+setTimeout(()=>{
+
+    jobBox.remove();
+
+},8000);
+
+
+
+}
+
+
+
+}catch(err){
+
+console.log(err);
+
+}
+
+
+},3000);
+
+
+}
+
+
+ async function checkExportJob(jobId, branch){
+
+const jobBox=document.createElement("div");
+
+jobBox.className="jobFloat";
+
+jobBox.innerHTML=`
+<div class="jobIcon">⏳</div>
+
+<div style="flex:1">
+
+<span class="jobTitle">
+Inventory Export
+</span>
+
+<span class="jobBranch">
+Branch: ${branch}
+</span>
+
+<div class="jobStatus">
+Waiting in queue...
+</div>
+
+</div>
+`;
+
+document.getElementById("jobContainer").appendChild(jobBox);
+
+const icon=jobBox.querySelector(".jobIcon");
+const title=jobBox.querySelector(".jobTitle");
+const status=jobBox.querySelector(".jobStatus");
+
+const timer=setInterval(async()=>{
+
+const res=await fetch(
+API_URL+
+"?action=getJobStatus"+
+"&jobId="+encodeURIComponent(jobId)+
+getSessionParams()
+);
+
+const data=await res.json();
+
+if(data.jobStatus=="PENDING"){
+
+icon.innerHTML="⏳";
+status.innerHTML="Waiting in queue...";
+
+}
+
+if(data.jobStatus=="RUNNING"){
+
+icon.innerHTML="🔄";
+status.innerHTML="Preparing Excel...";
+
+}
+
+if(data.jobStatus=="DONE"){
+
+clearInterval(timer);
+
+icon.innerHTML="✅";
+title.innerHTML="Completed";
+status.innerHTML="Downloading...";
+
+const a = document.createElement("a");
+a.href = data.result;
+a.download = "";
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+setTimeout(()=>jobBox.remove(),3000);
+
+}
+
+if(data.jobStatus=="FAILED"){
+
+clearInterval(timer);
+
+icon.innerHTML="❌";
+title.innerHTML="Failed";
+status.innerHTML="Export failed.";
+
+}
+
+},3000);
+
+}
+ 
+
+
+ 
+</SCRIPT>  
+
+<div id="editModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.4);
+justify-content:center;
+align-items:center;
+z-index:99999;
+">
+
+<div style="
+background:white;
+padding:25px;
+border-radius:15px;
+width:350px;
+">
+
+<h3>Edit Record</h3>
+
+<input type="hidden" id="editBranch">
+<input type="hidden" id="editRow">
+
+
+
+<label>SI Number</label>
+
+<input
+id="editSI"
+style="width:100%;padding:10px;margin-bottom:20px;">
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+
+<button onclick="closeEditModal()">
+Cancel
+</button>
+
+<button onclick="saveEdit()">
+Save
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div id="dialog" class="customDialog">
+ 
+<div class="dialogBox">
+
+<div id="dialogIcon" class="dialogIcon">
+⚠️
+</div>
+
+<div id="dialogTitle" class="dialogTitle">
+Confirm
+</div>
+
+<div id="dialogMessage" class="dialogMessage">
+Message
+</div>
+
+
+<div class="dialogButtons">
+
+<button 
+class="dialogBtn dialogCancel"
+onclick="closeDialog()">
+Cancel
+</button>
+
+
+<button
+id="dialogOK"
+class="dialogBtn dialogOK"
+onclick="dialogOKClick()">
+OK
+</button>
+
+</div>
+
+</div>
+
+</div>
+ 
+ 
+
+
+
+
+
+
+<div id="exportModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.4);
+justify-content:center;
+align-items:center;
+z-index:999999;
+">
+
+<div style="
+background:#fff;
+padding:25px;
+border-radius:15px;
+width:350px;
+">
+
+<h3>Select Branch to Export</h3>
+
+<select id="exportBranch"
+style="
+width:100%;
+padding:12px;
+margin:20px 0;
+">
+
+<option value="">-- Select Branch --</option>
+<option value="GAI">🏢 Gaisano Iloilo</option>
+<option value="CAS">🏢 Casa Plaza</option>
+<option value="BAC">🏢 Bacolod</option>
+
+</select>
+
+<div style="
+display:flex;
+justify-content:flex-end;
+gap:10px;
+">
+
+<button onclick="closeExportModal()">
+Cancel
+</button>
+
+<button onclick="startExport()">
+Export
+</button>
+
+</div>
+
+</div>
+
+</div> 
+
+
+<div id="updateStockModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.4);
+justify-content:center;
+align-items:center;
+z-index:999999;
+">
+
+<div style="
+background:#fff;
+padding:25px;
+border-radius:15px;
+width:420px;
+">
+
+<h3>Update Stocks</h3>
+
+<label>Select Branch</label>
+
+<select id="updateBranch"
+style="width:100%;padding:12px;margin:10px 0 20px">
+
+<option value="">-- Select Branch --</option>
+<option value="GAI">🏢 Gaisano Iloilo</option>
+<option value="CAS">🏢 Casa Plaza</option>
+<option value="BAC">🏢 Bacolod</option>
+
+</select>
+
+<label>Select Excel File</label>
+
+<input
+type="file"
+id="stockFile"
+accept=".xlsx,.xls"
+style="margin:15px 0;width:100%;">
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+
+<button onclick="closeUpdateStockModal()">
+Cancel
+</button>
+
+<button onclick="updateStocks()">
+Update
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+ <div id="clearModal"
+style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.4);
+justify-content:center;
+align-items:center;
+z-index:999999;
+">
+
+<div style="
+background:#fff;
+padding:25px;
+border-radius:15px;
+width:380px;
+">
+
+<h3>Clear Report</h3>
+
+<label>Select Branch</label>
+
+<select id="clearBranch"
+style="width:100%;padding:12px;margin:10px 0 20px">
+
+<option value="">-- Select Branch --</option>
+<option value="GAI">🏢 Gaisano Iloilo</option>
+<option value="CAS">🏢 Casa Plaza</option>
+<option value="BAC">🏢 Bacolod</option>
+
+</select>
+
+<label>Select Report</label>
+
+<select id="clearSheet"
+style="width:100%;padding:12px;margin:10px 0 20px">
+
+<option value="">-- Select Report --</option>
+<option value="stocks">📦 Stocks</option>
+<option value="SCANRESULTS">💰 Sold Out</option>
+<option value="AUDIT">🔄 Re-Inventory</option>
+
+</select>
+
+<div style="display:flex;justify-content:flex-end;gap:10px">
+
+<button onclick="closeClearModal()">
+Cancel
+</button>
+
+<button onclick="clearReport()">
+Clear
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+ <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<div id="jobContainer"></div>
+
+
+ 
+</body>
+</html>

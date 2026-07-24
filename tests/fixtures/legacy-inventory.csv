@@ -1,0 +1,7 @@
+Branch,Report,Lens Type,Description,Tag,SI,Inventory Date
+Gaisano Iloilo,stocks,Single Vision,"Frame, Blue",GAI-001,,2026-07-01
+CASA PLAZA,SCANRESULTS,Progressive,Premium Frame,CAS-002,SI-1002,7/2/2026
+Bacolod,AUDIT,Reading,Reading Glasses,BAC-003,,2026-07-03
+GAI,stocks,Single Vision,"Frame, Blue",GAI-001,,2026-07-01
+Unknown Branch,stocks,Single Vision,Bad Branch,ERR-1,,2026-07-04
+GAI,stocks,Single Vision,Missing Identity,,,2026-07-04
